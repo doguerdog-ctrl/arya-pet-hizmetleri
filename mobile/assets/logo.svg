@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Üst Yazı Yolu (ARYA PET NAKİL) -->
+    <path id="textPathTop" d="M 55,250 A 195,195 0 0,1 445,250" fill="none"/>
+    <!-- Alt Yazı Yolu (PET HİZMETLERİ) -->
+    <path id="textPathBottom" d="M 445,250 A 195,195 0 0,1 55,250" fill="none"/>
+    
+    <style>
+      .logo-text {
+        font-family: -apple-system, BlinkMacSystemFont, 'Montserrat', 'Arial Black', sans-serif;
+        font-weight: 900;
+        fill: #111827;
+        letter-spacing: 7px;
+      }
+    </style>
+  </defs>
+
+  <!-- 1. MERKEZİ SİYAH DAİRE -->
+  <circle cx="250" cy="250" r="128" fill="#111827" />
+
+  <!-- 2. VETERİNER / SAĞLIK ARTISI (+) -->
+  <g transform="translate(312, 168)">
+    <rect x="0" y="8" width="28" height="12" rx="3" fill="#FFFFFF" />
+    <rect x="8" y="0" width="12" height="28" rx="3" fill="#FFFFFF" />
+  </g>
+
+  <!-- 3. KÖPEK SİLÜETİ (BEYAZ NEGATİF ALAN) -->
+  <!-- Köpeğin başı, burnu, kulakları ve gövdesi -->
+  <path d="M 235 378
+           C 225 355, 222 315, 222 285
+           C 222 278, 208 274, 196 270
+           C 185 266, 172 262, 165 250
+           C 158 238, 172 230, 185 228
+           C 192 227, 202 224, 212 216
+           C 220 210, 224 195, 228 178
+           C 230 170, 234 162, 238 162
+           C 242 162, 245 174, 248 188
+           C 255 168, 275 164, 286 172
+           C 300 182, 308 200, 312 220
+           C 320 255, 324 310, 322 360
+           C 300 376, 270 380, 235 378 Z"
+        fill="#FFFFFF" />
+
+  <!-- Köpeğin Sevimli Göz Çentiği (Siyah kavis) -->
+  <path d="M 198 226 Q 206 218 214 224" stroke="#111827" stroke-width="4.5" stroke-linecap="round" fill="none" />
+
+  <!-- 4. KEDİ SİLÜETİ (SİYAH ALAN - KÖPEĞİN GÖVDESİ İÇİNDE) -->
+  <g transform="translate(236, 224)">
+    <!-- Kedinin Sırtı, Baş ve Dik Kulakları -->
+    <path d="M 36 150
+             C 32 140, 28 128, 28 112
+             C 28 98, 22 84, 18 72
+             C 17 68, 21 54, 25 54
+             C 27 54, 32 60, 36 67
+             C 41 58, 49 57, 54 62
+             C 60 68, 64 80, 62 92
+             C 60 102, 54 110, 52 118
+             C 48 132, 60 144, 72 148
+             C 60 152, 45 152, 36 150 Z"
+          fill="#111827" />
+    
+    <!-- Kedi Gözü Çizgisi -->
+    <path d="M 38 80 Q 44 75 48 81" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" fill="none" />
+  </g>
+
+  <!-- 5. ÜST YAZI: ARYA PET NAKİL -->
+  <text class="logo-text" font-size="34">
+    <textPath href="#textPathTop" startOffset="50%" text-anchor="middle">
+      ARYA PET NAKİL
+    </textPath>
+  </text>
+
+  <!-- 6. ALT YAZI: PET HİZMETLERİ -->
+  <text class="logo-text" font-size="32">
+    <textPath href="#textPathBottom" startOffset="50%" text-anchor="middle">
+      PET HİZMETLERİ
+    </textPath>
+  </text>
+</svg>

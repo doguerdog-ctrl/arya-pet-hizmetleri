@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arya Pet Nakil - Operasyon Masası</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              700: '#111827',
+              800: '#0B0F17',
+            },
+            whatsapp: '#25D366'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
+
+  <!-- Üst Bar: Orijinal Arya Logosu -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-slate-900 shadow-sm flex-shrink-0 bg-[#F4F1EA]">
+          <img src="original_logo.jpg" alt="Arya Pet Nakil" class="w-full h-full object-cover">
+        </div>
+        <div>
+          <h1 class="font-black text-slate-900 tracking-wider text-base leading-tight">ARYA PET NAKİL</h1>
+          <p class="text-[11px] text-slate-400 font-semibold">Özel Araç Operasyon Masası</p>
+        </div>
+      </div>
+
+      <!-- Tek Araç & Şoför Durum Kartı -->
+      <div class="flex items-center space-x-3 bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-xl">
+        <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+        <div class="text-xs">
+          <span class="font-bold text-slate-800 block">Özel Transfer Aracı (35 ARY 01)</span>
+          <span class="text-slate-500 text-[10px]">Şoför: Görevde</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- API hata / bilgi bandı -->
+    <div id="banner" class="hidden px-4 py-3 rounded-xl text-xs font-medium border"></div>
+
+    <!-- Üst 3 Kart -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Sabit Taban Ücret</span>
+        <p class="text-2xl font-black text-slate-900 mt-1" id="statBaseFare">—</p>
+        <span class="text-[11px] text-emerald-600 font-medium" id="statBaseNote">Yükleniyor...</span>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Dahil KM Sonrası Ek Ücret</span>
+        <p class="text-2xl font-black text-slate-800 mt-1" id="statExtraKm">—</p>
+        <span class="text-[11px] text-slate-500" id="statExtraNote">Yükleniyor...</span>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Aktif Araç & Canlı Konum</span>
+        <p class="text-2xl font-black text-emerald-700 mt-1">1 Araç (Aktif)</p>
+        <span class="text-[11px] text-emerald-600 font-medium" id="statTracking">Yükleniyor...</span>
+      </div>
+    </div>
+
+    <!-- 1. Fiyat Ayarlarını Canlı Güncelleme Kartı -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+      <div class="border-b border-slate-100 pb-3 mb-4">
+        <h2 class="font-bold text-slate-900 text-sm flex items-center">
+          <i class="fa-solid fa-sliders text-slate-900 mr-2"></i> Dinamik Fiyat ve Tarife Ayarları
+        </h2>
+        <p class="text-xs text-slate-500">Kaydettiğiniz parametreler fiyat motoruna ve mobil uygulamaya anında yansır.</p>
+      </div>
+
+      <form id="pricingForm" onsubmit="savePricing(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Sabit Taban Ücret (TL)</label>
+          <input type="number" min="0" step="any" id="inputBaseFare" disabled class="w-full p-2 border border-slate-300 rounded-lg font-bold text-slate-900 text-sm">
+          <span class="text-[10px] text-slate-500">Dahil km içindeki sabit tutar</span>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Taban Ücrete Dahil KM</label>
+          <input type="number" min="0" step="any" id="inputIncludedKm" disabled class="w-full p-2 border border-slate-300 rounded-lg font-bold text-slate-800 text-sm">
+          <span class="text-[10px] text-slate-500">Bu mesafeye kadar ek ücret yok</span>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Dahil KM Sonrası KM Başı (TL)</label>
+          <input type="number" min="0" step="any" id="inputExtraKm" disabled class="w-full p-2 border border-slate-300 rounded-lg font-bold text-slate-800 text-sm">
+          <span class="text-[10px] text-slate-500">Sınırı aşan her km için</span>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Şehirlerarası KM Başı (TL)</label>
+          <input type="number" min="0" step="any" id="inputCityOutKm" disabled class="w-full p-2 border border-slate-300 rounded-lg font-bold text-slate-800 text-sm">
+          <span class="text-[10px] text-slate-500">Şehirlerarası baz tarifesi</span>
+        </div>
+        <div class="flex items-end">
+          <button type="submit" id="saveBtn" disabled class="w-full py-2.5 bg-slate-900 hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg text-xs shadow-sm transition-all">
+            <i class="fa-solid fa-floppy-disk mr-1"></i> Ayarları Canlıya Al
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 2. Rezervasyonlar & WhatsApp Konum Eşleme -->
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+      <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-slate-900 text-sm">Transfer Rezervasyonları ve WhatsApp Takip</h3>
+          <p class="text-xs text-slate-500">Şoförün aracından açtığı WhatsApp canlı konum linkini rezervasyona bağlayın.</p>
+        </div>
+        <button onclick="loadBookings()" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg text-xs font-medium text-slate-700 shadow-sm">
+          <i class="fa-solid fa-rotate-right mr-1"></i> Yenile
+        </button>
+      </div>
+
+      <div class="overflow-x-auto text-xs">
+        <table class="w-full text-left">
+          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[10px]">
+            <tr>
+              <th class="p-3.5">Kod</th>
+              <th class="p-3.5">Müşteri & Pet</th>
+              <th class="p-3.5">Güzergah (KM)</th>
+              <th class="p-3.5">Hesap Kuralı</th>
+              <th class="p-3.5">Tutar</th>
+              <th class="p-3.5">Durum</th>
+              <th class="p-3.5">WhatsApp Canlı Konum</th>
+              <th class="p-3.5 text-right">İşlem</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. Süper Uygulama Alt Modülleri: Kuaför, S.A.H Sahiplendirme (UGC Moderasyon) ve Pet + Care -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- S.A.H İlan Moderasyonu (Google Play UGC Politikası Zorunluluğu) -->
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div class="px-5 py-4 border-b border-slate-200 bg-rose-50/40 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm flex items-center">
+              <i class="fa-solid fa-paw text-rose-500 mr-2"></i> S.A.H Sahiplendirme İlan Moderasyonu
+            </h3>
+            <p class="text-[11px] text-slate-500">Google Play UGC politikası gereği ilanları denetleyin</p>
+          </div>
+          <span class="px-2.5 py-1 bg-rose-100 text-rose-800 rounded-full text-[10px] font-black">3 Aktif İlan</span>
+        </div>
+        <div class="divide-y divide-slate-100 text-xs">
+          <div class="p-3.5 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-slate-900 block">🐶 Pamuk (4 Aylık Melez) — Karşıyaka</span>
+              <span class="text-[11px] text-slate-500">Parazit aşıları tam, ücretsiz yuva aranıyor</span>
+            </div>
+            <div class="flex space-x-1.5">
+              <span class="px-2 py-1 bg-emerald-50 text-emerald-700 font-bold rounded text-[10px]">Yayında</span>
+              <button onclick="alert('İlan kaldırıldı')" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-[10px] font-bold">Kaldır</button>
+            </div>
+          </div>
+          <div class="p-3.5 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-slate-900 block">🐱 Mırmır & Kardeşi (2 Aylık) — Alsancak</span>
+              <span class="text-[11px] text-slate-500">Kum eğitimli, kuru mama yiyorlar</span>
+            </div>
+            <div class="flex space-x-1.5">
+              <span class="px-2 py-1 bg-emerald-50 text-emerald-700 font-bold rounded text-[10px]">Yayında</span>
+              <button onclick="alert('İlan kaldırıldı')" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-[10px] font-bold">Kaldır</button>
+            </div>
+          </div>
+          <div class="p-3.5 flex items-center justify-between bg-amber-50/40">
+            <div>
+              <span class="font-bold text-slate-900 block">🐈 Tarçın (1 Yaş Sarman) — Bornova</span>
+              <span class="text-[11px] text-amber-800 font-medium">⏳ Yeni Gönderildi • Onay Bekliyor</span>
+            </div>
+            <div class="flex space-x-1.5">
+              <button onclick="this.parentElement.innerHTML='<span class=\'px-2 py-1 bg-emerald-50 text-emerald-700 font-bold rounded text-[10px]\'>Onaylandı</span>'" class="px-2.5 py-1 bg-slate-900 text-white rounded text-[10px] font-bold">Onayla</button>
+              <button onclick="this.closest('.p-3\\.5').remove()" class="px-2 py-1 bg-red-50 text-red-600 rounded text-[10px] font-bold">Reddet</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pet Kuaför & Pet + Care Sipariş Özeti -->
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm flex items-center">
+              <i class="fa-solid fa-scissors text-amber-600 mr-2"></i> Pet Kuaför & Pet+Care Talepleri
+            </h3>
+            <p class="text-[11px] text-slate-500">VIP Nakilli kuaför randevuları ve ürün siparişleri</p>
+          </div>
+          <span class="px-2.5 py-1 bg-amber-100 text-amber-900 rounded-full text-[10px] font-black">Canlı Akış</span>
+        </div>
+        <div class="divide-y divide-slate-100 text-xs">
+          <div class="p-3.5 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-slate-900 block">✂️ Komple Irk Makas Tıraşı (+ VIP Nakil)</span>
+              <span class="text-[11px] text-slate-500">Müşteri: Selin K. • Toy Poodle (Bostanlı)</span>
+            </div>
+            <span class="font-black text-slate-900">950 TL</span>
+          </div>
+          <div class="p-3.5 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-slate-900 block">💊 Arya Probiyotik Macun + Somon Yağı</span>
+              <span class="text-[11px] text-slate-500">Pet + Care Siparişi • Nakil aracıyla teslim</span>
+            </div>
+            <span class="font-black text-slate-900">730 TL</span>
+          </div>
+          <div class="p-3.5 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-slate-900 block">🐱 Kedi Anestezisiz Tüy Açma Bakımı</span>
+              <span class="text-[11px] text-slate-500">Müşteri: Mert A. • British Longhair (Alsancak)</span>
+            </div>
+            <span class="font-black text-slate-900">750 TL</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const API_BASE = new URLSearchParams(location.search).get('api') || 'http://localhost:4000/api';
+
+    let settings = null;
+    let bookings = [];
+
+    const fmt = n => Number(n).toLocaleString('tr-TR');
+
+    function esc(value) {
+      const d = document.createElement('div');
+      d.textContent = value == null ? '' : String(value);
+      return d.innerHTML;
+    }
+
+    function safeUrl(url) {
+      try {
+        const u = new URL(url);
+        return (u.protocol === 'https:' || u.protocol === 'http:') ? u.href : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function showBanner(message, kind) {
+      const el = document.getElementById('banner');
+      if (!message) { el.classList.add('hidden'); return; }
+      const styles = kind === 'ok'
+        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+        : 'bg-red-50 border-red-200 text-red-800';
+      el.className = `px-4 py-3 rounded-xl text-xs font-medium border ${styles}`;
+      el.textContent = message;
+    }
+
+    async function api(path, options) {
+      let res;
+      try {
+        res = await fetch(API_BASE + path, {
+          headers: { 'Content-Type': 'application/json' },
+          ...options
+        });
+      } catch (_) {
+        throw new Error(`Sunucuya ulaşılamadı (${API_BASE}). Backend çalışıyor mu?`);
+      }
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || body.success === false) {
+        const err = body.error;
+        const detail = Array.isArray(err) ? err.map(e => e.message).join(', ') : err;
+        throw new Error(detail || `İstek başarısız (HTTP ${res.status})`);
+      }
+      return body.data;
+    }
+
+    function renderSettings() {
+      document.getElementById('inputBaseFare').value = settings.baseFareCityIn;
+      document.getElementById('inputIncludedKm').value = settings.includedKmCityIn;
+      document.getElementById('inputExtraKm').value = settings.extraPerKmRateCityIn;
+      document.getElementById('inputCityOutKm').value = settings.perKmRateCityOut;
+
+      document.getElementById('statBaseFare').textContent = fmt(settings.baseFareCityIn) + ' TL';
+      document.getElementById('statBaseNote').textContent = `0 - ${settings.includedKmCityIn} km arası sabit ücret`;
+      document.getElementById('statExtraKm').textContent = fmt(settings.extraPerKmRateCityIn) + ' TL / km';
+      document.getElementById('statExtraNote').textContent = `${settings.includedKmCityIn} km sınırını aşan mesafeler`;
+
+      ['inputBaseFare', 'inputIncludedKm', 'inputExtraKm', 'inputCityOutKm', 'saveBtn']
+        .forEach(id => { document.getElementById(id).disabled = false; });
+    }
+
+    async function loadPricing() {
+      try {
+        settings = await api('/admin/pricing');
+        renderSettings();
+      } catch (e) {
+        showBanner('Fiyat ayarları okunamadı: ' + e.message, 'error');
+        document.getElementById('statBaseNote').textContent = 'Okunamadı';
+        document.getElementById('statExtraNote').textContent = 'Okunamadı';
+      }
+    }
+
+    async function savePricing(e) {
+      e.preventDefault();
+      if (!settings) return;
+
+      const values = {
+        baseFareCityIn: parseFloat(document.getElementById('inputBaseFare').value),
+        includedKmCityIn: parseFloat(document.getElementById('inputIncludedKm').value),
+        extraPerKmRateCityIn: parseFloat(document.getElementById('inputExtraKm').value),
+        perKmRateCityOut: parseFloat(document.getElementById('inputCityOutKm').value)
+      };
+      if (Object.values(values).some(v => !Number.isFinite(v) || v < 0)) {
+        showBanner('Lütfen tüm alanlara 0 veya daha büyük geçerli sayılar girin.', 'error');
+        return;
+      }
+
+      const body = {
+        ...values,
+        companionRateCityOutPerKm: settings.companionRateCityOutPerKm,
+        sizeMultipliers: settings.sizeMultipliers,
+        trafficFactorMultiplier: settings.trafficFactorMultiplier,
+        enableTrafficFactor: settings.enableTrafficFactor
+      };
+
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      try {
+        settings = await api('/admin/pricing', { method: 'PUT', body: JSON.stringify(body) });
+        renderSettings();
+        renderBookings();
+        showBanner(`Tarife kaydedildi: ${fmt(settings.baseFareCityIn)} TL sabit (ilk ${settings.includedKmCityIn} km), sonrası ${fmt(settings.extraPerKmRateCityIn)} TL/km.`, 'ok');
+      } catch (err) {
+        showBanner('Tarife kaydedilemedi: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    const STATUS = {
+      PENDING: ['Onay Bekliyor', 'bg-amber-100 text-amber-800'],
+      CONFIRMED: ['Onaylandı', 'bg-blue-100 text-blue-800'],
+      DRIVER_ASSIGNED: ['Şoför Atandı', 'bg-indigo-100 text-indigo-800'],
+      IN_TRANSIT: ['Yolda', 'bg-emerald-100 text-emerald-800'],
+      COMPLETED: ['Tamamlandı', 'bg-slate-100 text-slate-700'],
+      CANCELLED: ['İptal', 'bg-red-100 text-red-700']
+    };
+
+    function ruleText(b) {
+      const p = b.pricing || {};
+      if (b.serviceType === 'CITY_IN') {
+        return p.distanceFare > 0
+          ? `${fmt(p.baseFare)} TL + ${fmt(p.distanceFare)} TL (ek km)`
+          : 'Sabit taban';
+      }
+      const companion = p.companionFee > 0 ? ` + refakatçi ${fmt(p.companionFee)} TL` : '';
+      return `${p.distanceKm} km × ${p.sizeMultiplier}x boyut${companion}`;
+    }
+
+    function renderBookings() {
+      const tbody = document.getElementById('bookingsBody');
+      if (!bookings.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400">Henüz rezervasyon yok.</td></tr>';
+      } else {
+        tbody.innerHTML = bookings.map(b => {
+          const p = b.pricing || {};
+          const [label, cls] = STATUS[b.status] || [b.status, 'bg-slate-100 text-slate-700'];
+          const link = safeUrl(b.whatsappTracking && b.whatsappTracking.liveLocationUrl);
+          const pet = b.pet || {};
+          return `
+            <tr>
+              <td class="p-3.5 font-mono font-bold text-slate-900">${esc(b.bookingCode)}</td>
+              <td class="p-3.5">
+                <span class="font-bold text-slate-800">${esc(b.customerName)}</span>
+                <p class="text-slate-500 text-[11px]">${esc(pet.name)} (${esc(pet.breed || pet.type)}, ${esc(pet.weightKg)}kg)</p>
+              </td>
+              <td class="p-3.5">
+                <p>${esc(b.origin && b.origin.address)} ➔ ${esc(b.destination && b.destination.address)}</p>
+                <span class="text-slate-400 font-mono">${esc(p.distanceKm)} km · ${b.serviceType === 'CITY_IN' ? 'Şehir içi' : 'Şehirlerarası'}</span>
+              </td>
+              <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-100 text-slate-800 font-bold rounded">${esc(ruleText(b))}</span></td>
+              <td class="p-3.5 font-black text-slate-900 text-sm">${fmt(p.totalPrice || 0)} TL</td>
+              <td class="p-3.5"><span class="px-2 py-0.5 ${cls} font-bold rounded text-[10px]">${esc(label)}</span></td>
+              <td class="p-3.5">${link
+                ? `<a href="${esc(link)}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded text-[10px] inline-flex items-center"><i class="fa-brands fa-whatsapp mr-1 text-emerald-600"></i> Konum Aktif</a>`
+                : '<span class="px-2 py-0.5 bg-slate-100 text-slate-600 font-bold rounded text-[10px]">Bağlı değil</span>'}</td>
+              <td class="p-3.5 text-right">
+                <button data-id="${esc(b.id)}" onclick="linkWhatsApp(this.dataset.id)" class="px-2.5 py-1.5 ${link ? 'bg-slate-800 hover:bg-slate-900' : 'bg-emerald-600 hover:bg-emerald-700'} text-white rounded-lg font-semibold text-[11px]">
+                  ${link ? 'Konum Güncelle' : 'Konum Eşle'}
+                </button>
+              </td>
+            </tr>`;
+        }).join('');
+      }
+
+      const linked = bookings.filter(b => safeUrl(b.whatsappTracking && b.whatsappTracking.liveLocationUrl)).length;
+      document.getElementById('statTracking').textContent = `${linked} / ${bookings.length} rezervasyonda konum bağlı`;
+    }
+
+    async function loadBookings() {
+      const tbody = document.getElementById('bookingsBody');
+      tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400">Yükleniyor...</td></tr>';
+      try {
+        bookings = await api('/bookings');
+        renderBookings();
+      } catch (e) {
+        bookings = [];
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-600">Rezervasyonlar yüklenemedi: ${esc(e.message)}</td></tr>`;
+        document.getElementById('statTracking').textContent = 'Okunamadı';
+      }
+    }
+
+    async function linkWhatsApp(id) {
+      const b = bookings.find(x => x.id === id);
+      if (!b) return;
+      const current = (b.whatsappTracking && b.whatsappTracking.liveLocationUrl) || '';
+      const input = prompt('Şoförün güncel WhatsApp canlı konum linkini girin:', current);
+      if (input === null) return;
+
+      const url = safeUrl(input.trim());
+      if (!url) {
+        showBanner('Geçerli bir http(s) linki girin.', 'error');
+        return;
+      }
+
+      try {
+        await api(`/bookings/${encodeURIComponent(id)}/whatsapp-tracking`, {
+          method: 'POST',
+          body: JSON.stringify({ liveLocationUrl: url })
+        });
+        showBanner(`${b.bookingCode} için WhatsApp canlı konum bağlandı.`, 'ok');
+        await loadBookings();
+      } catch (err) {
+        showBanner('Konum bağlanamadı: ' + err.message, 'error');
+      }
+    }
+
+    loadPricing();
+    loadBookings();
+  </script>
+</body>
+</html>
