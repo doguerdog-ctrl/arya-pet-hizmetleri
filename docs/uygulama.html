@@ -53,10 +53,18 @@
     
     #liveRouteMap {
       width: 100%;
-      height: 190px;
+      height: 205px;
       border-radius: 18px;
       z-index: 10;
       background: #e2e8f0;
+    }
+    /* Tailwind CSS img max-width kuralının Leaflet harita karolarını ezmesini %100 engeller */
+    .leaflet-container img,
+    .leaflet-tile,
+    .leaflet-marker-icon,
+    .leaflet-marker-shadow {
+      max-width: none !important;
+      max-height: none !important;
     }
 
     .custom-map-pin {
@@ -1368,7 +1376,18 @@
       const iconB = L.divIcon({ className: 'custom-map-pin pin-b', html: 'B', iconSize: [24, 24], iconAnchor: [12, 12] });
       L.marker(destPt, { icon: iconB }).addTo(markersLayer);
 
-      // OSRM API için lon,lat dizisi oluştur
+      // 1) ÖNCE ANINDA YEREL GERÇEK KARAYOLU ROTALARINI ÇİZ (Sıfır Bekleme / Sıfır Boş Harita)
+      const instantRoad = isIntercity ? [...REAL_HIGHWAY_ROAD] : [...REAL_IZMIR_ROAD];
+      const instantPoly = L.polyline(instantRoad, {
+        color: isIntercity ? '#D97706' : '#0F172A',
+        weight: 5,
+        opacity: 0.92
+      }).addTo(routeLayer);
+      map.invalidateSize();
+      map.fitBounds(instantPoly.getBounds(), { padding: [22, 22] });
+      recalculateLivePrice();
+
+      // 2) ARDINDAN CANLI OSRM İLE DAHA DETAYLI GEOMETRİ VARSA ÜZERİNE GÜNCELLE
       const coordString = waypoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
       const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
 
@@ -1381,30 +1400,20 @@
           currentDistance = +(route.distance / 1000).toFixed(1);
           const durationMin = Math.max(5, Math.round(route.duration / 60));
 
-          const statsEl = document.getElementById('liveMapStats');
-          if (statsEl) statsEl.innerText = `${currentDistance} km • ~${durationMin} dk`;
-
+          routeLayer.clearLayers();
           const poly = L.polyline(latLngs, {
             color: isIntercity ? '#D97706' : '#0F172A',
             weight: 5,
-            opacity: 0.92
+            opacity: 0.95
           }).addTo(routeLayer);
 
           map.invalidateSize();
           map.fitBounds(poly.getBounds(), { padding: [22, 22] });
           recalculateLivePrice(durationMin);
-          return;
         }
       } catch (e) {
-        console.warn('OSRM fallback:', e);
+        console.warn('OSRM anlık bağlantı yerine yerleşik karayolu rotası kullanılıyor.');
       }
-
-      // Yedek (Offline) gerçek kıvrımlı karayolu çizimi
-      const fallbackCoords = isIntercity ? [...REAL_HIGHWAY_ROAD] : [...REAL_IZMIR_ROAD];
-      const poly = L.polyline(fallbackCoords, { color: isIntercity ? '#D97706' : '#0F172A', weight: 5 }).addTo(routeLayer);
-      map.invalidateSize();
-      map.fitBounds(poly.getBounds(), { padding: [22, 22] });
-      recalculateLivePrice();
     }
 
     function onLocationChange() {
