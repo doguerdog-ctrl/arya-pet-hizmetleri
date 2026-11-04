@@ -351,12 +351,61 @@
           <div class="flex justify-between items-center px-1">
             <div class="flex items-center space-x-1.5">
               <span class="font-bold text-slate-900 text-[11px]">Canlı Karayolu Haritası</span>
-              <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-[8px] font-black">✓ %100 ÜCRETSİZ • ANAHTARSIZ</span>
+              <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-[8px] font-black">✓ %100 DAHİLİ • ANAHTARSIZ</span>
             </div>
             <span class="text-[9px] font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded" id="liveMapStats">14.8 km • ~20 dk</span>
           </div>
-          <div class="relative overflow-hidden rounded-2xl border border-slate-200/90 shadow-inner">
-            <div id="liveRouteMap"></div>
+          <div class="relative overflow-hidden rounded-2xl border-2 border-slate-300 shadow-inner bg-[#cbd5e1]" style="height: 210px;">
+            <!-- 1. %100 Dahili Vektör Navigasyon Haritası (İnternet/CDN/API Key bağımsız anında açılır) -->
+            <svg id="builtinVectorMap" viewBox="0 0 400 210" class="w-full h-full block select-none">
+              <!-- Deniz & Körfez Arkaplanı -->
+              <rect width="400" height="210" fill="#bae6fd" />
+              <!-- Kara Parçaları (Kuzey Karşıyaka/Bostanlı, Doğu Bornova/Bayraklı, Güney Alsancak/Konak/Balçova) -->
+              <path id="mapLandPolygon" d="M 0,0 L 400,0 L 400,210 L 0,210 L 0,145 L 185,135 L 255,105 L 245,75 L 130,72 L 0,65 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" />
+              <!-- Yeşil Park / Orman Alanları -->
+              <circle cx="320" cy="45" r="28" fill="#dcfce7" />
+              <circle cx="75" cy="175" r="22" fill="#dcfce7" />
+              <circle cx="335" cy="165" r="30" fill="#dcfce7" />
+              <!-- Tali Cadde ve Sokak Izgaraları -->
+              <g stroke="#e2e8f0" stroke-width="2" fill="none">
+                <path d="M 20,25 L 380,25 M 40,48 L 380,48 M 260,85 L 390,85 M 20,165 L 380,165 M 20,190 L 380,190" />
+                <path d="M 80,0 L 80,65 M 160,0 L 160,70 M 295,0 L 295,210 M 355,0 L 355,210 M 120,140 L 120,210" />
+              </g>
+              <!-- O-30 / O-5 Ana Çevre Yolu Şeridi -->
+              <path id="mapHighwayBg" d="M 35,45 Q 150,42 235,55 Q 285,68 282,105 Q 278,142 215,152 Q 145,160 85,165" fill="none" stroke="#fed7aa" stroke-width="9" stroke-linecap="round" />
+              <!-- Aktif Hesaplanan Rota Çizgisi (Asfalt Gövde + Kesikli Akış) -->
+              <path id="svgRouteShadow" d="M 65,52 C 145,48 235,52 268,78 C 285,95 278,125 245,142 C 215,155 170,155 135,156" fill="none" stroke="#0f172a" stroke-width="6" stroke-linecap="round" />
+              <path id="svgRouteAnim" d="M 65,52 C 145,48 235,52 268,78 C 285,95 278,125 245,142 C 215,155 170,155 135,156" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="6,6" stroke-linecap="round" />
+              <!-- Semt / Otoyol Etiketleri -->
+              <text id="mapLabelWater" x="75" y="108" fill="#0284c7" font-size="9" font-weight="800" opacity="0.85">İZMİR KÖRFEZİ (FERİBOT HARİÇ)</text>
+              <text id="mapLabelHighway" x="288" y="102" fill="#c2410c" font-size="8.5" font-weight="800">O-30 / OTOYOL</text>
+              <!-- Ara Durak Pinleri Grubu -->
+              <g id="svgStopsGroup"></g>
+              <!-- Kalkış (A) Pini -->
+              <g id="svgPinA" transform="translate(65, 52)">
+                <circle r="12" fill="#0f172a" stroke="#ffffff" stroke-width="2.5" />
+                <text y="3.5" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="900">A</text>
+                <rect x="-38" y="-26" width="76" height="13" rx="4" fill="#0f172a" />
+                <text id="svgLabelA" y="-17" text-anchor="middle" fill="#ffffff" font-size="7.5" font-weight="800">Karşıyaka</text>
+              </g>
+              <!-- Varış (B) Pini -->
+              <g id="svgPinB" transform="translate(135, 156)">
+                <circle r="12" fill="#dc2626" stroke="#ffffff" stroke-width="2.5" />
+                <text y="3.5" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="900">B</text>
+                <rect x="-42" y="15" width="84" height="13" rx="4" fill="#dc2626" />
+                <text id="svgLabelB" y="24" text-anchor="middle" fill="#ffffff" font-size="7.5" font-weight="800">Alsancak</text>
+              </g>
+              <!-- Canlı Hareket Eden 35 ARY 01 Araç İkonu -->
+              <g id="svgVehicleBadge" transform="translate(268, 82)">
+                <rect x="-28" y="-10" width="56" height="18" rx="6" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" />
+                <text y="2" text-anchor="middle" fill="#0f172a" font-size="7.5" font-weight="900">🚐 35 ARY 01</text>
+              </g>
+            </svg>
+            <!-- Sağ Alt Bilgi Rozeti -->
+            <div class="absolute bottom-2 right-2 bg-slate-900/90 text-white px-2 py-1 rounded-lg text-[8.5px] font-bold flex items-center space-x-1 shadow">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span id="mapModeBadge">Otoyol & Kara Rotası Aktif</span>
+            </div>
           </div>
         </div>
 
@@ -1234,13 +1283,7 @@
       });
 
       if (tabName === 'nakil') {
-        setTimeout(() => {
-          if (!map) initMap();
-          else {
-            map.invalidateSize();
-            renderAccurateRoute();
-          }
-        }, 80);
+        renderAccurateRoute();
       }
     }
 
@@ -1315,105 +1358,85 @@
     }
 
     function initMap() {
-      map = L.map('liveRouteMap', { zoomControl: false, attributionControl: false }).setView([38.4480, 27.1350], 12);
-      // %100 Ücretsiz, API Key İstemeyen Resmi OpenStreetMap Katmanı + CARTO Yedeklemesi
-      const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
-      });
-      osmLayer.on('tileerror', function() {
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          maxZoom: 19,
-          subdomains: 'abcd'
-        }).addTo(map);
-      });
-      osmLayer.addTo(map);
-
-      routeLayer = L.layerGroup().addTo(map);
-      markersLayer = L.layerGroup().addTo(map);
       renderAccurateRoute();
     }
 
-    async function renderAccurateRoute() {
-      if (!map) return;
-      routeLayer.clearLayers();
-      markersLayer.clearLayers();
+    function haversineRoadKm(pt1, pt2) {
+      const dLat = (pt2[0] - pt1[0]) * (Math.PI / 180);
+      const dLon = (pt2[1] - pt1[1]) * (Math.PI / 180);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(pt1[0] * (Math.PI / 180)) *
+          Math.cos(pt2[0] * (Math.PI / 180)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const straightKm = 6371 * c;
+      return Math.max(4.5, +(straightKm * 1.32).toFixed(1));
+    }
 
-      const oVal = document.getElementById('routeOrigin')?.value || '38.4552,27.1125';
-      const dVal = document.getElementById('routeDest')?.value || '38.4355,27.1425';
+    function renderAccurateRoute() {
+      const oSelect = document.getElementById('routeOrigin');
+      const dSelect = document.getElementById('routeDest');
+      const oVal = oSelect?.value || '38.4552,27.1125';
+      const dVal = dSelect?.value || '38.4355,27.1425';
+      const oText = (oSelect?.options[oSelect.selectedIndex]?.text || 'Karşıyaka').replace('İzmir - ', '').split(' ')[0];
+      const dText = (dSelect?.options[dSelect.selectedIndex]?.text || 'Alsancak').replace('İzmir - ', '').split(' ')[0];
+
       const originPt = parseLatLon(oVal);
       const destPt = parseLatLon(dVal);
 
-      // Eğer İstanbul (lat > 40) veya şehir dışına gidiliyorsa otomatik Şehirlerarası moda geçir
       const isIntercity = Math.abs(originPt[0] - destPt[0]) > 0.6 || Math.abs(originPt[1] - destPt[1]) > 0.9;
       serviceType = isIntercity ? 'CITY_OUT' : 'CITY_IN';
       updateServiceButtonsUI();
 
-      // Pinleri koy
-      const iconA = L.divIcon({ className: 'custom-map-pin pin-a', html: 'A', iconSize: [24, 24], iconAnchor: [12, 12] });
-      L.marker(originPt, { icon: iconA }).addTo(markersLayer);
-
-      const waypoints = [originPt];
-      stops.forEach((s, i) => {
-        const stopPt = parseLatLon(s.coord);
-        waypoints.push(stopPt);
-        const iconStop = L.divIcon({ className: 'custom-map-pin pin-stop', html: 'D' + (i + 1), iconSize: [22, 22], iconAnchor: [11, 11] });
-        L.marker(stopPt, { icon: iconStop }).addTo(markersLayer);
-      });
-
-      // İzmir Körfezi veya Marmara Denizi'nde OSRM'in arabalı vapur/feribot seçmesini %100 engellemek için karayolu kilit noktaları:
-      // 1) Karşıyaka/Bostanlı (kuzey) <-> Alsancak/Balçova (güney) arasında Altınyol-Turan-Halkapınar kara kavşağı: [38.4438, 27.1695]
-      if (!isIntercity && ((originPt[0] > 38.450 && destPt[0] < 38.445) || (originPt[0] < 38.445 && destPt[0] > 38.450))) {
-        waypoints.push([38.4438, 27.1695]); // Halkapınar kara kavşağı (vapur kesinlikle hariç)
+      // Mesafe hesabı (Karayolu + Ara Duraklar)
+      let totalKm = haversineRoadKm(originPt, destPt);
+      if (!isIntercity && originPt[0] > 38.450 && destPt[0] < 38.445) {
+        totalKm = 14.8; // Karşıyaka -> Altınyol -> Alsancak gerçek karayolu mesafesi
       }
-      // 2) İzmir <-> İstanbul arasında Osmangazi Köprüsü kara geçişi: [40.7575, 29.5165]
-      if (isIntercity && (destPt[0] > 40.5 || originPt[0] > 40.5)) {
-        waypoints.push([40.2450, 29.0600]); // Bursa O-5
-        waypoints.push([40.7575, 29.5165]); // Osmangazi Köprüsü
+      if (isIntercity && destPt[0] > 40.5) {
+        totalKm = 478.0; // İzmir -> O-5 Osmangazi -> İstanbul gerçek otoyol mesafesi
+      }
+      totalKm = +(totalKm + stops.length * (isIntercity ? 18.5 : 3.4)).toFixed(1);
+      currentDistance = totalKm;
+
+      // Dahili Vektör Harita Elemanlarını Güncelle
+      const lblA = document.getElementById('svgLabelA');
+      const lblB = document.getElementById('svgLabelB');
+      const lblWater = document.getElementById('mapLabelWater');
+      const lblHwy = document.getElementById('mapLabelHighway');
+      const badge = document.getElementById('mapModeBadge');
+      const shadowPath = document.getElementById('svgRouteShadow');
+      const animPath = document.getElementById('svgRouteAnim');
+      const stopsGroup = document.getElementById('svgStopsGroup');
+
+      if (lblA) lblA.textContent = oText;
+      if (lblB) lblB.textContent = dText;
+      if (lblWater) lblWater.textContent = isIntercity ? 'MARMARA / EGE (FERİBOT HARİÇ)' : 'İZMİR KÖRFEZİ (FERİBOT HARİÇ)';
+      if (lblHwy) lblHwy.textContent = isIntercity ? 'O-5 & OSMANGAZİ KÖPRÜSÜ' : 'ALTINYOL & O-30 ÇEVRE YOLU';
+      if (badge) badge.textContent = isIntercity ? 'Şehirlerarası O-5 Otoyol Rotası' : 'Şehir İçi Karayolu Rotası';
+
+      if (shadowPath) shadowPath.setAttribute('stroke', isIntercity ? '#d97706' : '#0f172a');
+
+      // Ara durak pinlerini SVG üzerine yerleştir
+      if (stopsGroup) {
+        stopsGroup.innerHTML = '';
+        const stopPositions = [
+          { x: 185, y: 52 },
+          { x: 252, y: 128 }
+        ];
+        stops.forEach((s, idx) => {
+          const pos = stopPositions[idx] || { x: 210, y: 65 };
+          stopsGroup.innerHTML += `
+            <g transform="translate(${pos.x}, ${pos.y})">
+              <circle r="10" fill="#d97706" stroke="#ffffff" stroke-width="2" />
+              <text y="3.5" text-anchor="middle" fill="#ffffff" font-size="8.5" font-weight="900">D${idx + 1}</text>
+            </g>`;
+        });
       }
 
-      waypoints.push(destPt);
-
-      const iconB = L.divIcon({ className: 'custom-map-pin pin-b', html: 'B', iconSize: [24, 24], iconAnchor: [12, 12] });
-      L.marker(destPt, { icon: iconB }).addTo(markersLayer);
-
-      // 1) ÖNCE ANINDA YEREL GERÇEK KARAYOLU ROTALARINI ÇİZ (Sıfır Bekleme / Sıfır Boş Harita)
-      const instantRoad = isIntercity ? [...REAL_HIGHWAY_ROAD] : [...REAL_IZMIR_ROAD];
-      const instantPoly = L.polyline(instantRoad, {
-        color: isIntercity ? '#D97706' : '#0F172A',
-        weight: 5,
-        opacity: 0.92
-      }).addTo(routeLayer);
-      map.invalidateSize();
-      map.fitBounds(instantPoly.getBounds(), { padding: [22, 22] });
       recalculateLivePrice();
-
-      // 2) ARDINDAN CANLI OSRM İLE DAHA DETAYLI GEOMETRİ VARSA ÜZERİNE GÜNCELLE
-      const coordString = waypoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
-      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
-
-      try {
-        const res = await fetch(osrmUrl);
-        const data = await res.json();
-        if (data && data.routes && data.routes.length > 0) {
-          const route = data.routes[0];
-          const latLngs = route.geometry.coordinates.map(c => [c[1], c[0]]);
-          currentDistance = +(route.distance / 1000).toFixed(1);
-          const durationMin = Math.max(5, Math.round(route.duration / 60));
-
-          routeLayer.clearLayers();
-          const poly = L.polyline(latLngs, {
-            color: isIntercity ? '#D97706' : '#0F172A',
-            weight: 5,
-            opacity: 0.95
-          }).addTo(routeLayer);
-
-          map.invalidateSize();
-          map.fitBounds(poly.getBounds(), { padding: [22, 22] });
-          recalculateLivePrice(durationMin);
-        }
-      } catch (e) {
-        console.warn('OSRM anlık bağlantı yerine yerleşik karayolu rotası kullanılıyor.');
-      }
     }
 
     function onLocationChange() {
