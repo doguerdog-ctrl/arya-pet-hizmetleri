@@ -304,18 +304,38 @@
         </div>
 
         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-          <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-            <span class="font-bold text-slate-900 text-xs">Rota & Duraklar</span>
-            <button onclick="addStop()" class="px-2 py-0.5 bg-slate-900 text-white font-bold rounded-lg text-[9px]">+ Ara Durak</button>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-1.5">
+            <span class="font-extrabold text-slate-900 text-xs">Rota & Duraklar (Canlı OSRM)</span>
+            <button onclick="addStop()" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-lg text-[9.5px] shadow-xs active:scale-95 transition-transform">+ Ara Durak Ekle</button>
           </div>
           <div class="flex items-center space-x-2">
             <div class="custom-map-pin pin-a flex-shrink-0 text-[10px]">A</div>
-            <input type="text" id="routeOrigin" value="Karşıyaka İskele" class="flex-1 p-1.5 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium">
+            <select id="routeOrigin" onchange="onLocationChange()" class="flex-1 p-1.5 border border-slate-200 rounded-xl text-xs bg-slate-50 font-bold text-slate-800">
+              <option value="38.4552,27.1125" selected>İzmir - Karşıyaka Çarşı</option>
+              <option value="38.4622,27.0945">İzmir - Bostanlı İskele</option>
+              <option value="38.4615,27.2165">İzmir - Bornova Merkez</option>
+              <option value="38.4355,27.1425">İzmir - Alsancak Kordon</option>
+              <option value="38.3925,27.0475">İzmir - Balçova / İnciraltı</option>
+              <option value="38.3245,26.7645">İzmir - Urla Merkez</option>
+              <option value="38.3220,26.3050">İzmir - Çeşme / Alaçatı</option>
+            </select>
           </div>
           <div id="stopsContainer" class="space-y-1.5"></div>
           <div class="flex items-center space-x-2">
             <div class="custom-map-pin pin-b flex-shrink-0 text-[10px]">B</div>
-            <input type="text" id="routeDest" value="Alsancak Kordon" class="flex-1 p-1.5 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium">
+            <select id="routeDest" onchange="onLocationChange()" class="flex-1 p-1.5 border border-slate-200 rounded-xl text-xs bg-slate-50 font-bold text-slate-800">
+              <option value="38.4355,27.1425" selected>İzmir - Alsancak Kordon</option>
+              <option value="38.4615,27.2165">İzmir - Bornova Merkez</option>
+              <option value="38.4552,27.1125">İzmir - Karşıyaka (Acil Vet)</option>
+              <option value="38.3925,27.0475">İzmir - Güzelbahçe / Narlıdere</option>
+              <option value="38.3245,26.7645">İzmir - Urla</option>
+              <option value="38.3220,26.3050">İzmir - Çeşme</option>
+              <option value="40.9905,29.0290">İstanbul - Kadıköy (O-5 Otoyolu)</option>
+              <option value="41.0422,29.0083">İstanbul - Beşiktaş (O-5 Otoyolu)</option>
+              <option value="39.9208,32.8541">Ankara - Çankaya</option>
+              <option value="37.0344,27.4305">Muğla - Bodrum</option>
+              <option value="36.8969,30.7133">Antalya - Lara / Konyaaltı</option>
+            </select>
           </div>
         </div>
 
@@ -1205,8 +1225,11 @@
       if (tabName === 'nakil') {
         setTimeout(() => {
           if (!map) initMap();
-          else map.invalidateSize();
-        }, 150);
+          else {
+            map.invalidateSize();
+            renderAccurateRoute();
+          }
+        }, 80);
       }
     }
 
@@ -1271,47 +1294,127 @@
       [40.7550, 29.5180], [40.7750, 29.5150], [40.9850, 29.0400]
     ];
 
+    function parseLatLon(val) {
+      if (!val) return [38.4552, 27.1125];
+      const parts = val.split(',').map(Number);
+      return parts.length === 2 && !isNaN(parts[0]) ? parts : [38.4552, 27.1125];
+    }
+
     function initMap() {
       map = L.map('liveRouteMap', { zoomControl: false, attributionControl: false }).setView([38.4480, 27.1350], 12);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+      // CARTO Voyager modern, kesintisiz ve yüksek kontrastlı ücretsiz harita katmanı
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        subdomains: 'abcd'
+      }).addTo(map);
 
       routeLayer = L.layerGroup().addTo(map);
       markersLayer = L.layerGroup().addTo(map);
       renderAccurateRoute();
     }
 
-    function renderAccurateRoute() {
+    async function renderAccurateRoute() {
       if (!map) return;
       routeLayer.clearLayers();
       markersLayer.clearLayers();
 
-      const isIntercity = serviceType === 'CITY_OUT';
-      let pathCoords = isIntercity ? [...REAL_HIGHWAY_ROAD] : [...REAL_IZMIR_ROAD];
+      const oVal = document.getElementById('routeOrigin')?.value || '38.4552,27.1125';
+      const dVal = document.getElementById('routeDest')?.value || '38.4355,27.1425';
+      const originPt = parseLatLon(oVal);
+      const destPt = parseLatLon(dVal);
 
+      // Eğer İstanbul (lat > 40) veya şehir dışına gidiliyorsa otomatik Şehirlerarası moda geçir
+      const isIntercity = Math.abs(originPt[0] - destPt[0]) > 0.6 || Math.abs(originPt[1] - destPt[1]) > 0.9;
+      serviceType = isIntercity ? 'CITY_OUT' : 'CITY_IN';
+      updateServiceButtonsUI();
+
+      // Pinleri koy
       const iconA = L.divIcon({ className: 'custom-map-pin pin-a', html: 'A', iconSize: [24, 24], iconAnchor: [12, 12] });
-      L.marker(pathCoords[0], { icon: iconA }).addTo(markersLayer);
+      L.marker(originPt, { icon: iconA }).addTo(markersLayer);
 
+      const waypoints = [originPt];
       stops.forEach((s, i) => {
-        const stopCoord = isIntercity ? [39.6500 + (i * 0.2), 27.8800] : [38.4585, 27.1250 + (i * 0.015)];
-        pathCoords.splice(2 + i, 0, stopCoord);
+        const stopPt = parseLatLon(s.coord);
+        waypoints.push(stopPt);
         const iconStop = L.divIcon({ className: 'custom-map-pin pin-stop', html: 'D' + (i + 1), iconSize: [22, 22], iconAnchor: [11, 11] });
-        L.marker(stopCoord, { icon: iconStop }).addTo(markersLayer);
+        L.marker(stopPt, { icon: iconStop }).addTo(markersLayer);
       });
 
-      const iconB = L.divIcon({ className: 'custom-map-pin pin-b', html: 'B', iconSize: [24, 24], iconAnchor: [12, 12] });
-      L.marker(pathCoords[pathCoords.length - 1], { icon: iconB }).addTo(markersLayer);
+      // İzmir Körfezi veya Marmara Denizi'nde OSRM'in arabalı vapur/feribot seçmesini %100 engellemek için karayolu kilit noktaları:
+      // 1) Karşıyaka/Bostanlı (kuzey) <-> Alsancak/Balçova (güney) arasında Altınyol-Turan-Halkapınar kara kavşağı: [38.4438, 27.1695]
+      if (!isIntercity && ((originPt[0] > 38.450 && destPt[0] < 38.445) || (originPt[0] < 38.445 && destPt[0] > 38.450))) {
+        waypoints.push([38.4438, 27.1695]); // Halkapınar kara kavşağı (vapur kesinlikle hariç)
+      }
+      // 2) İzmir <-> İstanbul arasında Osmangazi Köprüsü kara geçişi: [40.7575, 29.5165]
+      if (isIntercity && (destPt[0] > 40.5 || originPt[0] > 40.5)) {
+        waypoints.push([40.2450, 29.0600]); // Bursa O-5
+        waypoints.push([40.7575, 29.5165]); // Osmangazi Köprüsü
+      }
 
-      L.polyline(pathCoords, { color: isIntercity ? '#D97706' : '#111827', weight: 4.5, opacity: 0.95 }).addTo(routeLayer);
-      map.fitBounds(L.polyline(pathCoords).getBounds(), { padding: [20, 20] });
+      waypoints.push(destPt);
+
+      const iconB = L.divIcon({ className: 'custom-map-pin pin-b', html: 'B', iconSize: [24, 24], iconAnchor: [12, 12] });
+      L.marker(destPt, { icon: iconB }).addTo(markersLayer);
+
+      // OSRM API için lon,lat dizisi oluştur
+      const coordString = waypoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
+
+      try {
+        const res = await fetch(osrmUrl);
+        const data = await res.json();
+        if (data && data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+          const latLngs = route.geometry.coordinates.map(c => [c[1], c[0]]);
+          currentDistance = +(route.distance / 1000).toFixed(1);
+          const durationMin = Math.max(5, Math.round(route.duration / 60));
+
+          const statsEl = document.getElementById('liveMapStats');
+          if (statsEl) statsEl.innerText = `${currentDistance} km • ~${durationMin} dk`;
+
+          const poly = L.polyline(latLngs, {
+            color: isIntercity ? '#D97706' : '#0F172A',
+            weight: 5,
+            opacity: 0.92
+          }).addTo(routeLayer);
+
+          map.invalidateSize();
+          map.fitBounds(poly.getBounds(), { padding: [22, 22] });
+          recalculateLivePrice(durationMin);
+          return;
+        }
+      } catch (e) {
+        console.warn('OSRM fallback:', e);
+      }
+
+      // Yedek (Offline) gerçek kıvrımlı karayolu çizimi
+      const fallbackCoords = isIntercity ? [...REAL_HIGHWAY_ROAD] : [...REAL_IZMIR_ROAD];
+      const poly = L.polyline(fallbackCoords, { color: isIntercity ? '#D97706' : '#0F172A', weight: 5 }).addTo(routeLayer);
+      map.invalidateSize();
+      map.fitBounds(poly.getBounds(), { padding: [22, 22] });
+      recalculateLivePrice();
     }
 
-    function recalculateLivePrice() {
-      const isIntercity = serviceType === 'CITY_OUT';
-      const baseDist = isIntercity ? 478 : 14.8;
-      const stopExtraDist = stops.length * (isIntercity ? 18 : 3.2);
-      currentDistance = +(baseDist + stopExtraDist).toFixed(1);
+    function onLocationChange() {
+      renderAccurateRoute();
+    }
 
-      const estMinutes = isIntercity ? Math.round(currentDistance * 0.65) : Math.round(currentDistance * 1.4);
+    function updateServiceButtonsUI() {
+      const bIn = document.getElementById('btnCityIn');
+      const bOut = document.getElementById('btnCityOut');
+      if (!bIn || !bOut) return;
+      if (serviceType === 'CITY_IN') {
+        bIn.className = 'p-2 rounded-2xl border-2 border-slate-900 bg-white text-left shadow-xs';
+        bOut.className = 'p-2 rounded-2xl border border-slate-200 bg-white/70 text-left';
+      } else {
+        bOut.className = 'p-2 rounded-2xl border-2 border-slate-900 bg-white text-left shadow-xs';
+        bIn.className = 'p-2 rounded-2xl border border-slate-200 bg-white/70 text-left';
+      }
+    }
+
+    function recalculateLivePrice(overrideMinutes) {
+      const isIntercity = serviceType === 'CITY_OUT';
+      const estMinutes = overrideMinutes || (isIntercity ? Math.round(currentDistance * 0.65) : Math.round(currentDistance * 1.4));
       const statsEl = document.getElementById('liveMapStats');
       if (statsEl) statsEl.innerText = `${currentDistance} km • ~${estMinutes} dk`;
 
@@ -1369,17 +1472,19 @@
 
     function addStop() {
       if (stops.length >= 2) return;
-      const sampleNames = ['Bostanlı Veteriner Kliniği', 'Bornova Pet Kuaför'];
-      stops.push({ id: Date.now(), name: sampleNames[stops.length] });
+      const sampleStops = [
+        { name: 'Bostanlı Veteriner Kliniği', coord: '38.4585,27.0985' },
+        { name: 'Bornova Pet Kuaför', coord: '38.4615,27.2165' }
+      ];
+      const pick = sampleStops[stops.length];
+      stops.push({ id: Date.now(), name: pick.name, coord: pick.coord });
       renderStops();
-      recalculateLivePrice();
       renderAccurateRoute();
     }
 
     function removeStop(id) {
       stops = stops.filter(s => s.id !== id);
       renderStops();
-      recalculateLivePrice();
       renderAccurateRoute();
     }
 
@@ -1389,29 +1494,23 @@
       stops.forEach((s, i) => {
         const div = document.createElement('div');
         div.className = 'flex items-center space-x-2';
-        div.innerHTML = `<div class="custom-map-pin pin-stop text-[10px]">D${i+1}</div><input type="text" value="${s.name}" class="flex-1 p-1.5 border border-amber-200 rounded-xl text-xs bg-amber-50/40"><button onclick="removeStop(${s.id})" class="text-red-500 font-bold px-1">✕</button>`;
+        div.innerHTML = `<div class="custom-map-pin pin-stop text-[10px]">D${i+1}</div><input type="text" value="${s.name}" readonly class="flex-1 p-1.5 border border-amber-200 rounded-xl text-xs bg-amber-50/40 font-semibold text-slate-800"><button onclick="removeStop(${s.id})" class="text-red-500 font-bold px-1.5 py-0.5 hover:bg-red-50 rounded">✕</button>`;
         c.appendChild(div);
       });
     }
 
     function setServiceType(t) {
       serviceType = t;
-      const bIn = document.getElementById('btnCityIn');
-      const bOut = document.getElementById('btnCityOut');
       const oInput = document.getElementById('routeOrigin');
       const dInput = document.getElementById('routeDest');
       if (t === 'CITY_IN') {
-        bIn.className = 'p-2 rounded-2xl border-2 border-slate-900 bg-white text-left shadow-xs';
-        bOut.className = 'p-2 rounded-2xl border border-slate-200 bg-white/70 text-left';
-        if (oInput) oInput.value = 'Karşıyaka İskele';
-        if (dInput) dInput.value = 'Alsancak Kordon';
+        if (oInput) oInput.value = '38.4552,27.1125';
+        if (dInput) dInput.value = '38.4355,27.1425';
       } else {
-        bOut.className = 'p-2 rounded-2xl border-2 border-slate-900 bg-white text-left shadow-xs';
-        bIn.className = 'p-2 rounded-2xl border border-slate-200 bg-white/70 text-left';
-        if (oInput) oInput.value = 'İzmir (Bornova Gişeler)';
-        if (dInput) dInput.value = 'İstanbul (Kadıköy - O-5 Otoyolu)';
+        if (oInput) oInput.value = '38.4615,27.2165';
+        if (dInput) dInput.value = '40.9905,29.0290';
       }
-      recalculateLivePrice();
+      updateServiceButtonsUI();
       renderAccurateRoute();
     }
 
@@ -1461,9 +1560,13 @@
 
     function selectVetForTransfer(vetName) {
       const destInput = document.getElementById('routeDest');
-      if (destInput) destInput.value = vetName;
+      if (destInput) {
+        if (vetName.includes('Karşıyaka')) destInput.value = '38.4552,27.1125';
+        else if (vetName.includes('Alsancak')) destInput.value = '38.4355,27.1425';
+        else if (vetName.includes('Bornova')) destInput.value = '38.4615,27.2165';
+      }
       switchTab('nakil');
-      setServiceType('CITY_IN');
+      renderAccurateRoute();
     }
 
     function calculateDailyPortion() {
