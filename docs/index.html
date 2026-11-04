@@ -234,6 +234,22 @@
               </div>
             </button>
 
+            <!-- YENİ: DİJİTAL AŞI KARNESİ & GÜNLÜK ARAÇLAR -->
+            <button onclick="switchTab('karne')" class="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 via-blue-50 to-cyan-50 border-2 border-indigo-200 text-left shadow-sm hover:border-indigo-500 active:scale-[0.99] transition-all group col-span-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 text-white flex items-center justify-center text-xl shadow-md">
+                    🪪
+                  </div>
+                  <div>
+                    <h3 class="font-black text-slate-900 text-xs">Dijital Pet Karnem, Mama Hesaplayıcı & Kayıp SOS</h3>
+                    <p class="text-[10px] text-slate-600 mt-0.5">Aşı hatırlatıcı, QR künye, günlük gramaj hesabı ve kayıp alarmı</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-black text-white bg-indigo-600 px-2.5 py-1 rounded-xl shadow-xs whitespace-nowrap">Karnem →</span>
+              </div>
+            </button>
+
           </div>
         </div>
 
@@ -1002,36 +1018,172 @@
 
       </div>
 
+      <!-- ============================================== -->
+      <!-- 🪪 SAYFA 8: DİJİTAL AŞI KARNESİ, MAMA HESAPLAYICI & KAYIP SOS -->
+      <!-- ============================================== -->
+      <div id="pageKarne" class="p-3.5 space-y-3 text-xs hidden">
+        
+        <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+          <div class="flex items-center space-x-2">
+            <button onclick="switchTab('home')" class="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-slate-700">←</button>
+            <div>
+              <h2 class="font-black text-slate-900 text-xs">Dijital Pet Karnem & Akıllı Araçlar</h2>
+              <p class="text-[9px] text-slate-500">Aşı takvimi, QR künye, mama gramajı & kayıp SOS</p>
+            </div>
+          </div>
+          <button onclick="alert('📲 QR Künye ve PDF Aşı Karnesi oluşturuldu! Veterinerinizle paylaşabilirsiniz.')" class="px-2.5 py-1 bg-indigo-600 text-white font-black rounded-xl text-[9.5px] shadow-xs">
+            <i class="fa-solid fa-qrcode mr-1"></i>QR Künye
+          </button>
+        </div>
+
+        <!-- 1. DİJİTAL PET PASAPORTU KARTI -->
+        <div class="p-3.5 rounded-3xl bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white shadow-md space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl">
+                🐕
+              </div>
+              <div>
+                <div class="flex items-center space-x-1.5">
+                  <h3 class="font-black text-sm">Luna (Golden Retriever)</h3>
+                  <span class="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded text-[8px] font-bold">ÇİPLİ</span>
+                </div>
+                <p class="text-[9.5px] text-slate-300">2 Yaş • 24.5 kg • Kısırlaştırılmış • Çip: #TR-9001824</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aşı Hatırlatıcı Durumları -->
+          <div class="grid grid-cols-3 gap-1.5 pt-1 text-center">
+            <div class="p-2 rounded-xl bg-white/10 border border-white/10">
+              <span class="text-[8.5px] text-slate-300 block">İç/Dış Parazit</span>
+              <span class="font-black text-amber-300 text-[10px] block mt-0.5">⏳ 4 Gün Kaldı</span>
+            </div>
+            <div class="p-2 rounded-xl bg-white/10 border border-white/10">
+              <span class="text-[8.5px] text-slate-300 block">Karma Aşı</span>
+              <span class="font-black text-emerald-300 text-[10px] block mt-0.5">✓ Tamamlandı</span>
+            </div>
+            <div class="p-2 rounded-xl bg-white/10 border border-white/10">
+              <span class="text-[8.5px] text-slate-300 block">Kuduz Aşısı</span>
+              <span class="font-black text-emerald-300 text-[10px] block mt-0.5">✓ Tamamlandı</span>
+            </div>
+          </div>
+
+          <button onclick="selectVetForTransfer('Arya Karşıyaka Acil Hayvan Hastanesi')" class="w-full py-2 bg-indigo-500 hover:bg-indigo-400 text-white font-black rounded-xl text-[10px] shadow-xs active:scale-95 transition-transform">
+            💉 Yaklaşan Parazit Aşısı İçin Veteriner Nakli Planla
+          </button>
+        </div>
+
+        <!-- 2. AKILLI GÜNLÜK MAMA & SU HESAPLAYICI -->
+        <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-xs space-y-2.5">
+          <div class="flex justify-between items-center">
+            <div>
+              <h4 class="font-black text-slate-900 text-xs">🥣 Akıllı Mama & Su Ölçer</h4>
+              <p class="text-[9px] text-slate-500">Kilosuna ve kısırlaştırma durumuna göre günlük ideal porsiyon</p>
+            </div>
+            <span class="px-2 py-0.5 bg-blue-50 text-blue-800 font-bold rounded text-[8.5px]">Vet Formülü</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-[9px] font-bold text-slate-600 block mb-1">Tür</label>
+              <select id="calcPetType" onchange="calculateDailyPortion()" class="w-full p-1.5 border border-slate-200 rounded-xl text-[10px] font-bold bg-slate-50">
+                <option value="cat">🐱 Kedi</option>
+                <option value="dog" selected>🐶 Köpek</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-600 block mb-1">Kilo (kg)</label>
+              <input type="number" id="calcPetWeight" value="12" min="1" max="80" oninput="calculateDailyPortion()" class="w-full p-1.5 border border-slate-200 rounded-xl text-[10px] font-bold bg-slate-50">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-600 block mb-1">Durum</label>
+              <select id="calcNeutered" onchange="calculateDailyPortion()" class="w-full p-1.5 border border-slate-200 rounded-xl text-[10px] font-bold bg-slate-50">
+                <option value="yes">Kısır</option>
+                <option value="no">Kısır Değil</option>
+                <option value="puppy">Yavru</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-900 text-white flex justify-around items-center text-center">
+            <div>
+              <span class="text-[8.5px] text-slate-400 block">Günlük Kuru Mama</span>
+              <span class="font-black text-sm text-amber-400" id="resDryFood">185 gr / gün</span>
+            </div>
+            <div class="h-6 w-px bg-slate-700"></div>
+            <div>
+              <span class="text-[8.5px] text-slate-400 block">Günlük Taze Su</span>
+              <span class="font-black text-sm text-cyan-300" id="resWater">720 ml / gün</span>
+            </div>
+            <div class="h-6 w-px bg-slate-700"></div>
+            <div>
+              <span class="text-[8.5px] text-slate-400 block">Günlük Kalori</span>
+              <span class="font-black text-sm text-emerald-300" id="resCalories">640 kcal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. KAYIP HAYVAN ACİL SOS RADARI (MAHALLE ALARMI) -->
+        <div class="p-3.5 rounded-2xl bg-red-50 border-2 border-red-200 shadow-xs space-y-2 pb-4 mb-12">
+          <div class="flex justify-between items-center">
+            <span class="text-[9px] font-black text-white bg-red-600 px-2 py-0.5 rounded-full animate-pulse">📡 KAYIP SOS RADARI (AKTİF)</span>
+            <span class="text-[9px] font-bold text-red-700">5 km Çevredeki Kullanıcılar</span>
+          </div>
+          <p class="text-[9.5px] text-red-900/80">
+            Can dostunuz kaybolduğunda veya sokakta tasmalı kayıp bir hayvan gördüğünüzde tek tuşla bölgedeki tüm Arya kullanıcılarına fotoğraflı bildirim gönderin.
+          </p>
+          <div class="p-2.5 bg-white rounded-xl border border-red-200 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">🐈</span>
+              <div>
+                <span class="font-black text-slate-900 text-[10px] block">Kayıp: Limon (Sarı Tekir - Mavi Tasmalı)</span>
+                <span class="text-[8.5px] text-slate-500">📍 Bostanlı Cami Sokağı • 2 saat önce görüldü</span>
+              </div>
+            </div>
+            <button onclick="alert('📞 Limon\'un sahibine konum bilginiz ve telefonunuz iletiliyor...')" class="px-2.5 py-1 bg-emerald-600 text-white font-black rounded-lg text-[9px]">Gördüm!</button>
+          </div>
+          <button onclick="triggerLostPetSOS()" class="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl text-[10px] shadow-sm active:scale-95 transition-transform">
+            🚨 Kayıp Hayvan SOS Alarmı Yayınla (Ücretsiz)
+          </button>
+        </div>
+
+      </div>
+
     </div>
 
-    <!-- Alt Sekmeler -->
-    <div class="absolute bottom-0 inset-x-0 bg-white border-t border-slate-200 px-4 py-2 flex justify-between items-center text-xs z-30">
+    <!-- Alt Sekmeler (6 Hızlı Sekme) -->
+    <div class="absolute bottom-0 inset-x-0 bg-white border-t border-slate-200 px-3 py-2 flex justify-between items-center text-xs z-30">
       <button onclick="switchTab('home')" id="navHome" class="flex flex-col items-center text-slate-900 font-bold">
         <i class="fa-solid fa-house text-sm"></i>
-        <span class="text-[8.5px] mt-0.5">Ana Sayfa</span>
+        <span class="text-[8px] mt-0.5">Ana Sayfa</span>
       </button>
       <button onclick="switchTab('nakil')" id="navNakil" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
         <i class="fa-solid fa-truck-fast text-sm"></i>
-        <span class="text-[8.5px] mt-0.5">Pet Nakil</span>
+        <span class="text-[8px] mt-0.5">Pet Nakil</span>
+      </button>
+      <button onclick="switchTab('karne')" id="navKarne" class="flex flex-col items-center text-indigo-600 hover:text-indigo-700 font-bold">
+        <i class="fa-solid fa-id-card text-sm"></i>
+        <span class="text-[8px] mt-0.5">Karnem</span>
       </button>
       <button onclick="switchTab('care')" id="navCare" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
         <i class="fa-solid fa-basket-shopping text-sm"></i>
-        <span class="text-[8.5px] mt-0.5">Pet + Care</span>
+        <span class="text-[8px] mt-0.5">Pet+Care</span>
       </button>
       <button onclick="switchTab('sah')" id="navSah" class="flex flex-col items-center text-rose-500 hover:text-rose-600 font-bold">
         <i class="fa-solid fa-paw text-sm"></i>
-        <span class="text-[8.5px] mt-0.5">S.A.H</span>
+        <span class="text-[8px] mt-0.5">S.A.H</span>
       </button>
       <button onclick="switchTab('blog')" id="navBlog" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
         <i class="fa-solid fa-book-open text-sm"></i>
-        <span class="text-[8.5px] mt-0.5">Ansiklopedi</span>
+        <span class="text-[8px] mt-0.5">Rehber</span>
       </button>
     </div>
 
   </div>
 
   <script>
-    const pages = ['home', 'nakil', 'kuafor', 'veteriner', 'care', 'sah', 'blog'];
+    const pages = ['home', 'nakil', 'kuafor', 'veteriner', 'care', 'sah', 'blog', 'karne'];
 
     function switchTab(tabName) {
       pages.forEach(p => {
@@ -1042,7 +1194,7 @@
       const target = document.getElementById('page' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
       if (target) target.classList.remove('hidden');
 
-      ['home', 'nakil', 'care', 'sah', 'blog'].forEach(nav => {
+      ['home', 'nakil', 'karne', 'care', 'sah', 'blog'].forEach(nav => {
         const btn = document.getElementById('nav' + nav.charAt(0).toUpperCase() + nav.slice(1));
         if (btn) {
           if (nav === tabName) btn.className = 'flex flex-col items-center text-slate-900 font-black';
@@ -1312,6 +1464,38 @@
       if (destInput) destInput.value = vetName;
       switchTab('nakil');
       setServiceType('CITY_IN');
+    }
+
+    function calculateDailyPortion() {
+      const pType = document.getElementById('calcPetType')?.value || 'dog';
+      const weight = Math.max(0.5, parseFloat(document.getElementById('calcPetWeight')?.value || '10'));
+      const status = document.getElementById('calcNeutered')?.value || 'yes';
+
+      // Veteriner RER (Resting Energy Requirement) = 70 * (weight ^ 0.75)
+      const rer = 70 * Math.pow(weight, 0.75);
+      let factor = 1.4;
+      if (status === 'yes') factor = pType === 'cat' ? 1.2 : 1.4;
+      else if (status === 'no') factor = pType === 'cat' ? 1.4 : 1.6;
+      else if (status === 'puppy') factor = 2.2;
+
+      const kcal = Math.round(rer * factor);
+      const grams = Math.round(kcal / 3.6); // Ortalama kuru mama 3600 kcal/kg
+      const waterMl = Math.round(weight * 60); // 60 ml / kg su ihtiyacı
+
+      const elFood = document.getElementById('resDryFood');
+      const elWater = document.getElementById('resWater');
+      const elCal = document.getElementById('resCalories');
+      if (elFood) elFood.innerText = `${grams} gr / gün`;
+      if (elWater) elWater.innerText = `${waterMl} ml / gün`;
+      if (elCal) elCal.innerText = `${kcal} kcal`;
+    }
+
+    function triggerLostPetSOS() {
+      const petInfo = prompt("🚨 Kayıp Canlının Adı, Türü ve Tasma Rengi (Örn: Tarçın - Golden - Kırmızı Tasma):");
+      if (!petInfo) return;
+      const lastLoc = prompt("📍 En Son Görüldüğü Sokak / Semt:");
+      if (!lastLoc) return;
+      alert(`📡 ACİL SOS ALARMI YAYINLANDI!\n\n"${petInfo}" (${lastLoc}) bilgisi 5 km yarıçaptaki tüm Arya Pet Hizmetleri kullanıcılarına ve nöbetçi kliniklere anlık bildirim olarak gönderildi.`);
     }
 
     function openSahFormModal() {
