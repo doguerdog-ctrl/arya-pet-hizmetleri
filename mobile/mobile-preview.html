@@ -341,7 +341,10 @@
 
         <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xs space-y-1.5">
           <div class="flex justify-between items-center px-1">
-            <span class="font-bold text-slate-900 text-[11px]">Canlı Karayolu Haritası (Feribot Hariç)</span>
+            <div class="flex items-center space-x-1.5">
+              <span class="font-bold text-slate-900 text-[11px]">Canlı Karayolu Haritası</span>
+              <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-[8px] font-black">✓ %100 ÜCRETSİZ • ANAHTARSIZ</span>
+            </div>
             <span class="text-[9px] font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded" id="liveMapStats">14.8 km • ~20 dk</span>
           </div>
           <div class="relative overflow-hidden rounded-2xl border border-slate-200/90 shadow-inner">
@@ -1283,15 +1286,18 @@
     const PER_KM_CITY_OUT = 35;
 
     const REAL_IZMIR_ROAD = [
-      [38.4552, 27.1085], [38.4560, 27.1180], [38.4578, 27.1320],
-      [38.4610, 27.1450], [38.4590, 27.1620], [38.4510, 27.1720],
-      [38.4410, 27.1680], [38.4380, 27.1550], [38.4355, 27.1420]
+      [38.4552, 27.1125], [38.4562, 27.1195], [38.4578, 27.1285], [38.4595, 27.1365],
+      [38.4622, 27.1455], [38.4638, 27.1545], [38.4612, 27.1622], [38.4565, 27.1678],
+      [38.4510, 27.1715], [38.4455, 27.1712], [38.4415, 27.1682], [38.4392, 27.1620],
+      [38.4375, 27.1552], [38.4368, 27.1485], [38.4355, 27.1425]
     ];
 
     const REAL_HIGHWAY_ROAD = [
-      [38.4500, 27.1700], [38.6200, 27.4300], [38.9200, 27.8300],
-      [39.6500, 27.8800], [40.0800, 28.3500], [40.2300, 29.0200],
-      [40.7550, 29.5180], [40.7750, 29.5150], [40.9850, 29.0400]
+      [38.4615, 27.2165], [38.5250, 27.3200], [38.6220, 27.4280], [38.7850, 27.6120],
+      [38.9180, 27.8320], [39.1950, 27.8900], [39.6480, 27.8820], [39.8850, 28.1550],
+      [40.0820, 28.3650], [40.2150, 28.8200], [40.2580, 29.0620], [40.4350, 29.2550],
+      [40.6650, 29.4850], [40.7575, 29.5165], [40.7980, 29.4820], [40.8850, 29.2650],
+      [40.9620, 29.0950], [40.9905, 29.0290]
     ];
 
     function parseLatLon(val) {
@@ -1302,11 +1308,17 @@
 
     function initMap() {
       map = L.map('liveRouteMap', { zoomControl: false, attributionControl: false }).setView([38.4480, 27.1350], 12);
-      // CARTO Voyager modern, kesintisiz ve yüksek kontrastlı ücretsiz harita katmanı
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        subdomains: 'abcd'
-      }).addTo(map);
+      // %100 Ücretsiz, API Key İstemeyen Resmi OpenStreetMap Katmanı + CARTO Yedeklemesi
+      const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      });
+      osmLayer.on('tileerror', function() {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
+          subdomains: 'abcd'
+        }).addTo(map);
+      });
+      osmLayer.addTo(map);
 
       routeLayer = L.layerGroup().addTo(map);
       markersLayer = L.layerGroup().addTo(map);

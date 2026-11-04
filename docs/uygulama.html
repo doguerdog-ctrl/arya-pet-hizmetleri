@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arya Pet Hizmetleri - Süper Pet Ekosistemi & Hayvan Ansiklopedisi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Leaflet Harita Kütüphanesi -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brandDark: '#111827',
+            whatsapp: '#25D366'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 20%, #1e293b 0%, #090d16 100%);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .phone-body {
+      width: 410px;
+      height: 875px;
+      border-radius: 52px;
+      box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.85), 0 0 0 12px #334155, 0 0 0 15px #0f172a;
+    }
+    .notch {
+      width: 135px;
+      height: 22px;
+      background: #090d16;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+      margin: 0 auto;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    #liveRouteMap {
+      width: 100%;
+      height: 190px;
+      border-radius: 18px;
+      z-index: 10;
+      background: #e2e8f0;
+    }
+
+    .custom-map-pin {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 11px;
+      color: white;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+      border: 2px solid white;
+    }
+    .pin-a { background: #0f172a; }
+    .pin-b { background: #dc2626; }
+    .pin-stop { background: #d97706; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+  <!-- Telefon Gövdesi -->
+  <div class="phone-body bg-[#FAF8F5] overflow-hidden flex flex-col relative select-none">
+    
+    <!-- Status Bar -->
+    <div class="bg-slate-900 text-white text-[11px] px-7 pt-3 pb-1 flex justify-between items-center z-30">
+      <span class="font-semibold tracking-tight">09:41</span>
+      <div class="notch"></div>
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-signal text-[10px]"></i>
+        <i class="fa-solid fa-wifi text-[10px]"></i>
+        <i class="fa-solid fa-battery-three-quarters text-[11px]"></i>
+      </div>
+    </div>
+
+    <!-- Üst Bar: Çatı Marka ARYA PET HİZMETLERİ -->
+    <div class="px-4 py-2 bg-white border-b border-slate-200/80 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-900 shadow-sm flex-shrink-0 bg-[#F4F1EA]">
+          <img src="assets/original_logo.jpg" alt="Arya Pet Hizmetleri" class="w-full h-full object-cover">
+        </div>
+        <div>
+          <h1 class="font-black text-slate-900 tracking-wider text-xs leading-tight">ARYA PET HİZMETLERİ</h1>
+          <p class="text-[9px] text-slate-500 font-semibold tracking-wide">TÜM EVCİL HAYVAN İHTİYAÇLARI</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-1.5">
+        <button onclick="openCartDrawer()" class="relative px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-[10px] font-black flex items-center space-x-1 hover:bg-amber-100 active:scale-95 transition-all">
+          <i class="fa-solid fa-basket-shopping text-[10px]"></i>
+          <span id="headerCartCount">0</span>
+        </button>
+        <button onclick="switchTab('sah')" class="px-2.5 py-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[10px] font-black flex items-center space-x-1 shadow-xs hover:opacity-95 active:scale-95 transition-all">
+          <span>🐾</span>
+          <span>S.A.H</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Ekran İçeriği -->
+    <div class="flex-1 overflow-y-auto hide-scrollbar bg-[#FAF8F5] pb-16">
+      
+      <!-- ============================================== -->
+      <!-- SAYFA 1: SÜPER UYGULAMA ANA SAYFASI -->
+      <!-- ============================================== -->
+      <div id="pageHome" class="p-3.5 space-y-3 text-xs">
+        
+        <!-- Karşılama Banner + Hızlı Aksiyon -->
+        <div class="p-4 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white shadow-lg relative overflow-hidden">
+          <div class="flex justify-between items-center">
+            <div class="relative z-10 max-w-[215px]">
+              <span class="text-[9px] font-extrabold tracking-widest uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full">● 35 ARY 01 Görevde</span>
+              <h2 class="text-sm font-black mt-1.5 leading-snug">Tek Dokunuşla Patili Dostunuza Özel Hizmet</h2>
+              <p class="text-[10px] text-slate-300 mt-0.5">VIP Nakil, Kuaför, Nöbetçi Veteriner & S.A.H</p>
+            </div>
+            <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-400/80 shadow-lg flex-shrink-0 bg-[#F4F1EA]">
+              <img src="assets/original_logo.jpg" alt="Arya" class="w-full h-full object-cover">
+            </div>
+          </div>
+          <!-- Hızlı Tek Tık Çağrı & Nakil Çubuğu -->
+          <div class="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-white/10">
+            <button onclick="switchTab('nakil')" class="py-2 px-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[10.5px] flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-transform">
+              <i class="fa-solid fa-van-shuttle"></i>
+              <span>Hemen Nakil Çağır</span>
+            </button>
+            <button onclick="switchTab('veteriner')" class="py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-[10.5px] flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-transform">
+              <i class="fa-solid fa-truck-medical"></i>
+              <span>Acil Nöbetçi Vet</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ANA KATEGORİ IZGARASI -->
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-black text-slate-900 text-xs">Hizmetlerimiz (Hızlı Erişim)</span>
+            <span class="text-[9px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">7/24 Aktif</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            
+            <button onclick="switchTab('nakil')" class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 text-left shadow-sm hover:border-slate-900 active:scale-[0.98] transition-all group">
+              <div class="flex justify-between items-start mb-2">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 text-white flex items-center justify-center text-lg shadow-sm group-hover:scale-105 transition-transform">
+                  🚐
+                </div>
+                <span class="text-[8.5px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">1.000 TL'den</span>
+              </div>
+              <h3 class="font-black text-slate-900 text-xs">VIP Pet Nakil</h3>
+              <p class="text-[10px] text-slate-500 mt-0.5">10 km sabit fiyat, klimalı steril kabin</p>
+              <div class="mt-2 text-[9.5px] font-extrabold text-slate-900 flex items-center">
+                <span>Rota Hesapla</span>
+                <i class="fa-solid fa-arrow-right ml-1 text-[8px] group-hover:translate-x-1 transition-transform"></i>
+              </div>
+            </button>
+
+            <button onclick="switchTab('kuafor')" class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 text-left shadow-sm hover:border-amber-500 active:scale-[0.98] transition-all group">
+              <div class="flex justify-between items-start mb-2">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center text-lg shadow-sm group-hover:scale-105 transition-transform">
+                  ✂️
+                </div>
+                <span class="text-[8.5px] font-black text-amber-900 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Anestezisiz</span>
+              </div>
+              <h3 class="font-black text-slate-900 text-xs">Pet Kuaför & SPA</h3>
+              <p class="text-[10px] text-slate-500 mt-0.5">Makas tıraşı, ozonlu banyo & VIP alım</p>
+              <div class="mt-2 text-[9.5px] font-extrabold text-amber-700 flex items-center">
+                <span>Randevu Al</span>
+                <i class="fa-solid fa-arrow-right ml-1 text-[8px] group-hover:translate-x-1 transition-transform"></i>
+              </div>
+            </button>
+
+            <button onclick="switchTab('veteriner')" class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 text-left shadow-sm hover:border-rose-500 active:scale-[0.98] transition-all group">
+              <div class="flex justify-between items-start mb-2">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white flex items-center justify-center text-lg shadow-sm group-hover:scale-105 transition-transform">
+                  🏥
+                </div>
+                <span class="text-[8.5px] font-black text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">7/24 Nöbetçi</span>
+              </div>
+              <h3 class="font-black text-slate-900 text-xs">Veteriner Hizmetleri</h3>
+              <p class="text-[10px] text-slate-500 mt-0.5">En yakın açık klinikler & acil nakil</p>
+              <div class="mt-2 text-[9.5px] font-extrabold text-rose-600 flex items-center">
+                <span>Klinikleri Gör</span>
+                <i class="fa-solid fa-arrow-right ml-1 text-[8px] group-hover:translate-x-1 transition-transform"></i>
+              </div>
+            </button>
+
+            <button onclick="switchTab('care')" class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 text-left shadow-sm hover:border-teal-600 active:scale-[0.98] transition-all group">
+              <div class="flex justify-between items-start mb-2">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center text-lg shadow-sm group-hover:scale-105 transition-transform">
+                  🛍️
+                </div>
+                <span class="text-[8.5px] font-black text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">Vet Onaylı</span>
+              </div>
+              <h3 class="font-black text-slate-900 text-xs">Pet + Care Market</h3>
+              <p class="text-[10px] text-slate-500 mt-0.5">Probiyotik, somon yağı, köpük & ödül</p>
+              <div class="mt-2 text-[9.5px] font-extrabold text-teal-700 flex items-center">
+                <span>Ürünleri İncele</span>
+                <i class="fa-solid fa-arrow-right ml-1 text-[8px] group-hover:translate-x-1 transition-transform"></i>
+              </div>
+            </button>
+
+            <!-- S.A.H -->
+            <button onclick="switchTab('sah')" class="p-3.5 rounded-2xl bg-gradient-to-r from-rose-50 via-pink-50 to-amber-50 border-2 border-rose-200 text-left shadow-sm hover:border-rose-500 active:scale-[0.99] transition-all group col-span-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center text-xl shadow-md">
+                    🐾
+                  </div>
+                  <div>
+                    <h3 class="font-black text-slate-900 text-xs">S.A.H — Ücretsiz Sokak Hayvanı Sahiplendirme</h3>
+                    <p class="text-[10px] text-slate-600 mt-0.5">Sokaktaki canlara sıcak bir yuva açın veya ücretsiz ilan verin</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-black text-white bg-rose-600 px-2.5 py-1 rounded-xl shadow-xs whitespace-nowrap">Yuva Ol →</span>
+              </div>
+            </button>
+
+            <!-- YENİ: DİJİTAL AŞI KARNESİ & GÜNLÜK ARAÇLAR -->
+            <button onclick="switchTab('karne')" class="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 via-blue-50 to-cyan-50 border-2 border-indigo-200 text-left shadow-sm hover:border-indigo-500 active:scale-[0.99] transition-all group col-span-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 text-white flex items-center justify-center text-xl shadow-md">
+                    🪪
+                  </div>
+                  <div>
+                    <h3 class="font-black text-slate-900 text-xs">Dijital Pet Karnem, Mama Hesaplayıcı & Kayıp SOS</h3>
+                    <p class="text-[10px] text-slate-600 mt-0.5">Aşı hatırlatıcı, QR künye, günlük gramaj hesabı ve kayıp alarmı</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-black text-white bg-indigo-600 px-2.5 py-1 rounded-xl shadow-xs whitespace-nowrap">Karnem →</span>
+              </div>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- 📖 GENİŞLETİLMİŞ HAYVAN ANSİKLOPEDİSİ & BİLGİ REHBERİ VİTRİNİ -->
+        <div class="bg-white p-3.5 rounded-3xl border border-slate-200 shadow-xs space-y-2.5">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <div>
+              <span class="font-black text-slate-900 text-xs flex items-center">
+                <i class="fa-solid fa-book-open-reader text-slate-900 mr-1.5"></i> Arya Hayvan Ansiklopedisi
+              </span>
+              <p class="text-[9px] text-slate-500">Köpek, Kedi, Kuş ve Egzotik Canlı Rehberi</p>
+            </div>
+            <button onclick="switchTab('blog')" class="text-[10px] font-bold text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg">
+              Rehberi Aç →
+            </button>
+          </div>
+
+          <!-- Hızlı Kategori Rozetleri -->
+          <div class="flex space-x-1.5 overflow-x-auto hide-scrollbar pb-1 text-[10px]">
+            <span class="px-2.5 py-1 bg-red-50 text-red-700 font-bold rounded-lg whitespace-nowrap">🚨 Acil İlk Yardım</span>
+            <span class="px-2.5 py-1 bg-amber-50 text-amber-800 font-bold rounded-lg whitespace-nowrap">🐶 Köpek Eğitimi</span>
+            <span class="px-2.5 py-1 bg-teal-50 text-teal-800 font-bold rounded-lg whitespace-nowrap">🐱 Kedi Psikolojisi</span>
+            <span class="px-2.5 py-1 bg-blue-50 text-blue-800 font-bold rounded-lg whitespace-nowrap">🥗 Beslenme Bilimi</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- SAYFA 2: PET NAKİL SAYFASI -->
+      <!-- ============================================== -->
+      <div id="pageNakil" class="p-3 space-y-2.5 text-xs hidden">
+        <div class="flex items-center space-x-2 pb-1 border-b border-slate-200">
+          <button onclick="switchTab('home')" class="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-slate-700">←</button>
+          <div>
+            <h2 class="font-black text-slate-900 text-xs">Arya Pet Nakil (35 ARY 01)</h2>
+            <p class="text-[9px] text-slate-500">10 km sabit 1.000 TL, otoyol öncelikli transfer</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="setServiceType('CITY_IN')" id="btnCityIn" class="p-2 rounded-2xl border-2 border-slate-900 bg-white text-left shadow-xs">
+            <span class="font-extrabold text-slate-900 text-xs block">Şehir İçi</span>
+            <span class="text-sm font-black text-slate-900">1.000 TL</span>
+            <span class="text-[9px] text-slate-500 block">10 km Sabit</span>
+          </button>
+          <button onclick="setServiceType('CITY_OUT')" id="btnCityOut" class="p-2 rounded-2xl border border-slate-200 bg-white/70 text-left">
+            <span class="font-bold text-slate-700 text-xs block">Şehirlerarası</span>
+            <span class="text-sm font-black text-slate-900">Mesafe Bazlı</span>
+            <span class="text-[9px] text-slate-500 block">O-5 Otoyolu</span>
+          </button>
+        </div>
+
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-1.5">
+            <span class="font-extrabold text-slate-900 text-xs">Rota & Duraklar (Canlı OSRM)</span>
+            <button onclick="addStop()" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-lg text-[9.5px] shadow-xs active:scale-95 transition-transform">+ Ara Durak Ekle</button>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="custom-map-pin pin-a flex-shrink-0 text-[10px]">A</div>
+            <select id="routeOrigin" onchange="onLocationChange()" class="flex-1 p-1.5 border border-slate-200 rounded-xl text-xs bg-slate-50 font-bold text-slate-800">
+              <option value="38.4552,27.1125" selected>İzmir - Karşıyaka Çarşı</option>
+              <option value="38.4622,27.0945">İzmir - Bostanlı İskele</option>
+              <option value="38.4615,27.2165">İzmir - Bornova Merkez</option>
+              <option value="38.4355,27.1425">İzmir - Alsancak Kordon</option>
+              <option value="38.3925,27.0475">İzmir - Balçova / İnciraltı</option>
+              <option value="38.3245,26.7645">İzmir - Urla Merkez</option>
+              <option value="38.3220,26.3050">İzmir - Çeşme / Alaçatı</option>
+            </select>
+          </div>
+          <div id="stopsContainer" class="space-y-1.5"></div>
+          <div class="flex items-center space-x-2">
+            <div class="custom-map-pin pin-b flex-shrink-0 text-[10px]">B</div>
+            <select id="routeDest" onchange="onLocationChange()" class="flex-1 p-1.5 border border-slate-200 rounded-xl text-xs bg-slate-50 font-bold text-slate-800">
+              <option value="38.4355,27.1425" selected>İzmir - Alsancak Kordon</option>
+              <option value="38.4615,27.2165">İzmir - Bornova Merkez</option>
+              <option value="38.4552,27.1125">İzmir - Karşıyaka (Acil Vet)</option>
+              <option value="38.3925,27.0475">İzmir - Güzelbahçe / Narlıdere</option>
+              <option value="38.3245,26.7645">İzmir - Urla</option>
+              <option value="38.3220,26.3050">İzmir - Çeşme</option>
+              <option value="40.9905,29.0290">İstanbul - Kadıköy (O-5 Otoyolu)</option>
+              <option value="41.0422,29.0083">İstanbul - Beşiktaş (O-5 Otoyolu)</option>
+              <option value="39.9208,32.8541">Ankara - Çankaya</option>
+              <option value="37.0344,27.4305">Muğla - Bodrum</option>
+              <option value="36.8969,30.7133">Antalya - Lara / Konyaaltı</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xs space-y-1.5">
+          <div class="flex justify-between items-center px-1">
+            <div class="flex items-center space-x-1.5">
+              <span class="font-bold text-slate-900 text-[11px]">Canlı Karayolu Haritası</span>
+              <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-[8px] font-black">✓ %100 ÜCRETSİZ • ANAHTARSIZ</span>
+            </div>
+            <span class="text-[9px] font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded" id="liveMapStats">14.8 km • ~20 dk</span>
+          </div>
+          <div class="relative overflow-hidden rounded-2xl border border-slate-200/90 shadow-inner">
+            <div id="liveRouteMap"></div>
+          </div>
+        </div>
+
+        <!-- Takvim & Randevu Tarih Seçici (Dolu Günler Kilitli) -->
+        <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-slate-900 text-[11px]">📅 Transfer Tarihi (Kasım 2026)</span>
+            <span class="text-[9px] text-rose-600 font-bold">Üstü Çizililer Dolu</span>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-center text-[10px]" id="calendarDaysGrid">
+            <!-- Dinamik Takvim -->
+          </div>
+        </div>
+
+        <!-- Pet Boyutu & Refakatçi Seçimi -->
+        <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-slate-800 text-[10.5px]">Evcil Dost Boyutu:</span>
+            <select id="petSizeSelect" onchange="recalculateLivePrice()" class="p-1 border border-slate-200 rounded-lg text-[10px] font-bold bg-slate-50">
+              <option value="1.0">Küçük (0-10 kg)</option>
+              <option value="1.2">Orta (11-25 kg)</option>
+              <option value="1.4">Büyük (26-45 kg)</option>
+              <option value="1.6">Dev Irk (46+ kg)</option>
+            </select>
+          </div>
+          <label class="flex items-center space-x-1 cursor-pointer">
+            <input type="checkbox" id="companionCheck" onchange="recalculateLivePrice()" checked class="rounded border-slate-300 text-slate-900">
+            <span class="text-[10px] font-bold text-slate-700">Refakatçi</span>
+          </label>
+        </div>
+
+        <div class="bg-white border-2 border-slate-900 p-3 rounded-3xl shadow-sm space-y-1">
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="text-[9px] text-slate-500 uppercase block">Anlık Canlı Nakil Teklifi</span>
+              <span class="text-2xl font-black text-slate-900" id="totalPriceDisplay">1.240 TL</span>
+            </div>
+            <span class="px-2 py-0.5 bg-amber-50 text-amber-900 border border-amber-200 font-bold rounded text-[10px]" id="priceRuleTag">+4.8 KM Aşım</span>
+          </div>
+          <p class="text-[9px] text-slate-500" id="priceDetailSubtext">İlk 10 km sabit 1.000 TL + aşan 4.8 km × 50 TL (Refakatçi Ücretsiz)</p>
+        </div>
+
+        <button onclick="completeBooking()" class="w-full py-3 bg-slate-900 hover:bg-black text-white font-extrabold rounded-2xl text-xs shadow-lg transition-all mb-12">
+          Nakil Rezervasyonunu Tamamla
+        </button>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- SAYFA 3: PET KUAFÖR -->
+      <!-- ============================================== -->
+      <div id="pageKuafor" class="p-3.5 space-y-3 text-xs hidden">
+        <div class="flex items-center space-x-2 pb-1 border-b border-slate-200">
+          <button onclick="switchTab('home')" class="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-slate-700">←</button>
+          <div>
+            <h2 class="font-black text-slate-900 text-xs">Arya Pet Kuaför Salonu</h2>
+            <p class="text-[9px] text-slate-500">Steril salon bakımı veya evden VIP nakille teslim</p>
+          </div>
+        </div>
+
+        <!-- VIP Transfer Seçeneği Banner -->
+        <div class="p-2.5 bg-amber-50 rounded-2xl border border-amber-200 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="text-xl">🚐</span>
+            <div>
+              <p class="font-black text-slate-900 text-[10px]">Evden Alıp Eve Teslim VIP Nakil</p>
+              <p class="text-[8.5px] text-amber-800">Kuaför paketiyle birlikte özel indirimli transfer</p>
+            </div>
+          </div>
+          <button onclick="switchTab('nakil')" class="px-2 py-1 bg-slate-900 text-white font-bold rounded-lg text-[9px] whitespace-nowrap">Nakil Ekle</button>
+        </div>
+
+        <div class="space-y-2.5 pb-12">
+          <!-- 1. Hizmet -->
+          <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[8.5px] font-black text-amber-800 bg-amber-50 px-2 py-0.5 rounded mb-1 inline-block">⭐ En Çok Tercih Edilen</span>
+                <span class="font-black text-xs text-slate-900 block">Komple Irk Makas Tıraşı & Ozon SPA</span>
+                <p class="text-[9.5px] text-slate-500 mt-0.5">Özel ırk makas kesimi, ozonlu banyo, tırnak kesimi, göz & kulak temizliği.</p>
+              </div>
+              <span class="font-black text-sm text-slate-900 bg-slate-100 px-2 py-1 rounded-xl">950 TL</span>
+            </div>
+            <div class="flex space-x-1.5 text-[9px]">
+              <span class="px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-700">🕒 10:30 Müsait</span>
+              <span class="px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-700">🕒 14:00 Müsait</span>
+              <span class="px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-700">🕒 16:30 Müsait</span>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+              <span class="text-[9px] text-emerald-700 font-bold">✓ %100 Anestezisiz İşlem</span>
+              <button onclick="bookGrooming('Komple Irk Makas Tıraşı & Ozon SPA', 950)" class="py-1.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black rounded-xl text-[10px] shadow-sm active:scale-95 transition-all">Hemen Randevu Al</button>
+            </div>
+          </div>
+
+          <!-- 2. Hizmet -->
+          <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="font-black text-xs text-slate-900 block">Medikal & Hijyenik Banyo Bakımı</span>
+                <p class="text-[9.5px] text-slate-500 mt-0.5">Dermatolojik medikal şampuan, pati altı tıraşı, anal kese kontrolü ve fön.</p>
+              </div>
+              <span class="font-black text-sm text-slate-900 bg-slate-100 px-2 py-1 rounded-xl">650 TL</span>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+              <span class="text-[9px] text-slate-500 font-semibold">⏱️ ~45 Dakika • Bitkisel</span>
+              <button onclick="bookGrooming('Medikal & Hijyenik Banyo Bakımı', 650)" class="py-1.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black rounded-xl text-[10px] shadow-sm active:scale-95 transition-all">Hemen Randevu Al</button>
+            </div>
+          </div>
+
+          <!-- 3. Hizmet -->
+          <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="font-black text-xs text-slate-900 block">Kedi Tüy Açma & Anestezisiz Tıraş</span>
+                <p class="text-[9.5px] text-slate-500 mt-0.5">Keçeleşmiş tüylerin sakin ve stressiz şekilde açılması, hijyen tıraşı.</p>
+              </div>
+              <span class="font-black text-sm text-slate-900 bg-slate-100 px-2 py-1 rounded-xl">750 TL</span>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+              <span class="text-[9px] text-slate-500 font-semibold">⏱️ ~50 Dakika • Sıfır Stres</span>
+              <button onclick="bookGrooming('Kedi Tüy Açma & Anestezisiz Tıraş', 750)" class="py-1.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black rounded-xl text-[10px] shadow-sm active:scale-95 transition-all">Hemen Randevu Al</button>
+            </div>
+          </div>
+
+          <!-- 4. Hizmet -->
+          <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="font-black text-xs text-slate-900 block">Yavru İlk Kuaför Deneyimi (Puppy SPA)</span>
+                <p class="text-[9.5px] text-slate-500 mt-0.5">3-6 aylık yavrular için fön sesine alıştırma, göz önü açma, bebek şampuanı.</p>
+              </div>
+              <span class="font-black text-sm text-slate-900 bg-slate-100 px-2 py-1 rounded-xl">500 TL</span>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+              <span class="text-[9px] text-slate-500 font-semibold">⏱️ ~40 Dakika • Pozitif Oyunlu</span>
+              <button onclick="bookGrooming('Yavru İlk Kuaför Deneyimi (Puppy SPA)', 500)" class="py-1.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black rounded-xl text-[10px] shadow-sm active:scale-95 transition-all">Hemen Randevu Al</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- SAYFA 4: VETERİNER HİZMETLERİ -->
+      <!-- ============================================== -->
+      <div id="pageVeteriner" class="p-3.5 space-y-3 text-xs hidden">
+        <div class="flex items-center space-x-2 pb-1 border-b border-slate-200">
+          <button onclick="switchTab('home')" class="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-slate-700">←</button>
+          <div>
+            <h2 class="font-black text-slate-900 text-xs">Veteriner Hizmetleri & Nöbetçi</h2>
+            <p class="text-[9px] text-slate-500">Konumunuza en yakın ve 7/24 açık acil klinikler</p>
+          </div>
+        </div>
+
+        <!-- Acil Buton -->
+        <div class="p-3.5 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-2xl shadow-md flex items-center justify-between">
+          <div>
+            <span class="font-black text-xs block">🚨 7/24 Acil Pet Ambulans Nakli</span>
+            <span class="text-[9.5px] text-red-100">Kritik vakalarda kliniğe doğrudan hızlı transfer</span>
+          </div>
+          <button onclick="switchTab('nakil')" class="px-3.5 py-2 bg-white text-red-600 font-black rounded-xl text-[10px] shadow-sm active:scale-95 transition-transform">Hemen Çağır</button>
+        </div>
+
+        <div class="space-y-2.5 pb-12">
+          <!-- Klinik 1 -->
+          <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-black text-xs text-slate-900">Arya Karşıyaka Acil Hayvan Hastanesi</h3>
+                <p class="text-[9.5px] text-slate-500 mt-0.5">Cemal Gürsel Cad. No: 42 • <span class="text-emerald-700 font-bold">1.2 km uzaklıkta</span></p>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[8.5px]">● 7/24 AÇIK</span>
+            </div>
+            <div class="flex flex-wrap gap-1 text-[8.5px] text-slate-600 font-semibold">
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">🩻 Dijital Röntgen</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">🩺 Yoğun Bakım Ünitesi</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">🧪 Kan Biyokimya</span>
+            </div>
+            <div class="flex space-x-2 pt-1">
+              <a href="tel:+905551234567" class="flex-1 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-black rounded-xl text-[10px] text-center active:scale-95 transition-transform">📞 Kliniği Ara</a>
+              <button onclick="selectVetForTransfer('Arya Karşıyaka Acil Hayvan Hastanesi')" class="flex-1 py-2 bg-slate-900 hover:bg-black text-white font-black rounded-xl text-[10px] shadow-xs active:scale-95 transition-transform">🚐 Kliniğe Nakil İste</button>
+            </div>
+          </div>
+
+          <!-- Klinik 2 -->
+          <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-black text-xs text-slate-900">Alsancak Nöbetçi Veteriner Polikliniği</h3>
+                <p class="text-[9.5px] text-slate-500 mt-0.5">Ali Çetinkaya Bulvarı No: 18 • <span class="text-emerald-700 font-bold">3.8 km uzaklıkta</span></p>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[8.5px]">● NÖBETÇİ</span>
+            </div>
+            <div class="flex flex-wrap gap-1 text-[8.5px] text-slate-600 font-semibold">
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">💉 Aşı & Mikroçip</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">🦷 Diş Tartar Temizliği</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">🏥 Kısırlaştırma</span>
+            </div>
+            <div class="flex space-x-2 pt-1">
+              <a href="tel:+905551234568" class="flex-1 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-black rounded-xl text-[10px] text-center active:scale-95 transition-transform">📞 Kliniği Ara</a>
+              <button onclick="selectVetForTransfer('Alsancak Nöbetçi Veteriner Polikliniği')" class="flex-1 py-2 bg-slate-900 hover:bg-black text-white font-black rounded-xl text-[10px] shadow-xs active:scale-95 transition-transform">🚐 Kliniğe Nakil İste</button>
+            </div>
+          </div>
+
+          <!-- Klinik 3 -->
+          <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-black text-xs text-slate-900">Bornova Egzotik & Kuş Sağlığı Merkezi</h3>
+                <p class="text-[9.5px] text-slate-500 mt-0.5">Mustafa Kemal Cad. No: 91 • <span class="text-emerald-700 font-bold">5.4 km uzaklıkta</span></p>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-black text-[8.5px]">🦜 EGZOTİK UZMANI</span>
+            </div>
+            <div class="flex flex-wrap gap-1 text-[8.5px] text-slate-600 font-semibold">
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">🦜 Papağan & Kuş</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">🐰 Tavşan Diş Bakımı</span>
+            </div>
+            <div class="flex space-x-2 pt-1">
+              <a href="tel:+905551234569" class="flex-1 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-black rounded-xl text-[10px] text-center active:scale-95 transition-transform">📞 Kliniği Ara</a>
+              <button onclick="selectVetForTransfer('Bornova Egzotik & Kuş Sağlığı Merkezi')" class="flex-1 py-2 bg-slate-900 hover:bg-black text-white font-black rounded-xl text-[10px] shadow-xs active:scale-95 transition-transform">🚐 Kliniğe Nakil İste</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- SAYFA 5: PET + CARE -->
+      <!-- ============================================== -->
+      <div id="pageCare" class="p-3.5 space-y-3 text-xs hidden">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+          <div class="flex items-center space-x-2">
+            <button onclick="switchTab('home')" class="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-slate-700">←</button>
+            <div>
+              <h2 class="font-black text-slate-900 text-xs">Pet + Care Sağlık & Bakım Marketi</h2>
+              <p class="text-[9px] text-slate-500">Veteriner onaylı takviyeler, mama & oyuncaklar</p>
+            </div>
+          </div>
+          <button onclick="openCartDrawer()" class="px-2.5 py-1.5 bg-teal-600 text-white font-black rounded-xl text-[10px] flex items-center space-x-1 shadow-xs">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="careCartBtnText">Sepet (0)</span>
+          </button>
+        </div>
+
+        <!-- Ürünler Izgarası (6 Zengin Ürün) -->
+        <div class="grid grid-cols-2 gap-2.5 pb-14">
+          
+          <!-- Ürün 1 -->
+          <div class="p-2.5 bg-white rounded-2xl border-2 border-slate-200/80 shadow-xs space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="h-18 py-3 bg-amber-50/70 rounded-xl flex items-center justify-center text-3xl">💊</div>
+              <span class="text-[8px] font-black text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">Sindirim & Bağışıklık</span>
+              <h4 class="font-black text-xs text-slate-900 mt-0.5">Arya Probiyotik Macun</h4>
+              <p class="text-[8.5px] text-slate-500">İshal önleyici, bağırsak florası düzenleyici (100g)</p>
+            </div>
+            <div class="pt-1">
+              <span class="font-black text-slate-900 text-sm block">320 TL</span>
+              <button onclick="addToCart('Arya Probiyotik Macun', 320)" class="w-full mt-1 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black rounded-xl text-[9.5px] shadow-xs active:scale-95 transition-all">+ Sepete Ekle</button>
+            </div>
+          </div>
+
+          <!-- Ürün 2 -->
+          <div class="p-2.5 bg-white rounded-2xl border-2 border-slate-200/80 shadow-xs space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="h-18 py-3 bg-teal-50/70 rounded-xl flex items-center justify-center text-3xl">🧴</div>
+              <span class="text-[8px] font-black text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">Su Gerektirmez</span>
+              <h4 class="font-black text-xs text-slate-900 mt-0.5">Kuru Köpük Şampuan</h4>
+              <p class="text-[8.5px] text-slate-500">Aloe vera ve papatya özlü hızlı pati/tüy temizleyici</p>
+            </div>
+            <div class="pt-1">
+              <span class="font-black text-slate-900 text-sm block">240 TL</span>
+              <button onclick="addToCart('Kuru Köpük Şampuan', 240)" class="w-full mt-1 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black rounded-xl text-[9.5px] shadow-xs active:scale-95 transition-all">+ Sepete Ekle</button>
+            </div>
+          </div>
+
+          <!-- Ürün 3 -->
+          <div class="p-2.5 bg-white rounded-2xl border-2 border-slate-200/80 shadow-xs space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="h-18 py-3 bg-blue-50/70 rounded-xl flex items-center justify-center text-3xl">🐟</div>
+              <span class="text-[8px] font-black text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">Tüy Dökülmesi Karşıtı</span>
+              <h4 class="font-black text-xs text-slate-900 mt-0.5">Saf Norveç Somon Yağı</h4>
+              <p class="text-[8.5px] text-slate-500">Soğuk sıkım Omega-3 & 6 parlak tüy ve eklem desteği</p>
+            </div>
+            <div class="pt-1">
+              <span class="font-black text-slate-900 text-sm block">410 TL</span>
+              <button onclick="addToCart('Saf Norveç Somon Yağı', 410)" class="w-full mt-1 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black rounded-xl text-[9.5px] shadow-xs active:scale-95 transition-all">+ Sepete Ekle</button>
+            </div>
+          </div>
+
+          <!-- Ürün 4 -->
+          <div class="p-2.5 bg-white rounded-2xl border-2 border-slate-200/80 shadow-xs space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="h-18 py-3 bg-purple-50/70 rounded-xl flex items-center justify-center text-3xl">🐾</div>
+              <span class="text-[8px] font-black text-purple-800 bg-purple-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">Pati & Burun Bakımı</span>
+              <h4 class="font-black text-xs text-slate-900 mt-0.5">Organik Pati Balmumu</h4>
+              <p class="text-[8.5px] text-slate-500">Sıcak asfalt yanıkları ve kış çatlaklarına karşı koruyucu</p>
+            </div>
+            <div class="pt-1">
+              <span class="font-black text-slate-900 text-sm block">180 TL</span>
+              <button onclick="addToCart('Organik Pati Balmumu', 180)" class="w-full mt-1 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black rounded-xl text-[9.5px] shadow-xs active:scale-95 transition-all">+ Sepete Ekle</button>
+            </div>
+          </div>
+
+          <!-- Ürün 5 -->
+          <div class="p-2.5 bg-white rounded-2xl border-2 border-slate-200/80 shadow-xs space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="h-18 py-3 bg-rose-50/70 rounded-xl flex items-center justify-center text-3xl">🦴</div>
+              <span class="text-[8px] font-black text-rose-800 bg-rose-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">Zeka & Diş Sağlığı</span>
+              <h4 class="font-black text-xs text-slate-900 mt-0.5">İnteraktif Ödül Oyuncağı</h4>
+              <p class="text-[8.5px] text-slate-500">İçine ödül maması gizlenen doğal kauçuk diş kaşıyıcı</p>
+            </div>
+            <div class="pt-1">
+              <span class="font-black text-slate-900 text-sm block">290 TL</span>
+              <button onclick="addToCart('İnteraktif Ödül Oyuncağı', 290)" class="w-full mt-1 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black rounded-xl text-[9.5px] shadow-xs active:scale-95 transition-all">+ Sepete Ekle</button>
+            </div>
+          </div>
+
+          <!-- Ürün 6 -->
+          <div class="p-2.5 bg-white rounded-2xl border-2 border-slate-200/80 shadow-xs space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="h-18 py-3 bg-emerald-50/70 rounded-xl flex items-center justify-center text-3xl">🌿</div>
+              <span class="text-[8px] font-black text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">Tüy Yumağı Önleyici</span>
+              <h4 class="font-black text-xs text-slate-900 mt-0.5">Kedi Malt Macunu (Anti-Hairball)</h4>
+              <p class="text-[8.5px] text-slate-500">Yutulan tüylerin sindirim sisteminden doğal atılımı</p>
+            </div>
+            <div class="pt-1">
+              <span class="font-black text-slate-900 text-sm block">260 TL</span>
+              <button onclick="addToCart('Kedi Malt Macunu', 260)" class="w-full mt-1 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black rounded-xl text-[9.5px] shadow-xs active:scale-95 transition-all">+ Sepete Ekle</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- SAYFA 6: S.A.H SAHİPLENDİRME -->
+      <!-- ============================================== -->
+      <div id="pageSah" class="p-3.5 space-y-3 text-xs hidden">
+        <div class="flex items-center space-x-2 pb-1 border-b border-slate-200">
+          <button onclick="switchTab('home')" class="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-slate-700">←</button>
+          <div>
+            <h2 class="font-black text-slate-900 text-xs">S.A.H Sahiplendirme Platformu</h2>
+            <p class="text-[9px] text-slate-500">Sahipsiz sokak canlarına sıcak yuva (%100 Ücretsiz)</p>
+          </div>
+        </div>
+
+        <button onclick="openSahFormModal()" class="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl text-xs flex items-center justify-center space-x-1 shadow-sm transition-all">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Ücretsiz Sahiplendirme İlanı Ver</span>
+        </button>
+
+        <div class="space-y-2 pb-12">
+          
+          <!-- İlan 1 -->
+          <div class="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
+            <div class="flex space-x-3">
+              <div class="w-16 h-16 rounded-xl bg-amber-100 flex items-center justify-center text-3xl flex-shrink-0">🐶</div>
+              <div class="flex-1">
+                <div class="flex justify-between items-start">
+                  <h4 class="font-black text-xs text-slate-900">Pamuk (4 Aylık Melez)</h4>
+                  <span class="text-[8.5px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">ACİL YUVA</span>
+                </div>
+                <p class="text-[9.5px] text-slate-500 mt-1">İzmir Karşıyaka'da sokakta bulundu. Parazit aşıları yapıldı, tuvalet eğitimine başlandı. Çok oyuncu.</p>
+                <span class="text-[8.5px] text-slate-400 mt-1 block">📍 Karşıyaka, İzmir • 2 gün önce</span>
+              </div>
+            </div>
+            <div class="flex space-x-1.5">
+              <button onclick="alert('Pamuk için ilan sahibiyle WhatsApp sohbeti başlatılıyor...')" class="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-[10px] flex items-center justify-center space-x-1">
+                <i class="fa-brands fa-whatsapp text-xs"></i>
+                <span>Sahiplenmek İstiyorum</span>
+              </button>
+              <button onclick="alert('🚩 İlan inceleme ekibine bildirildi (Google Play UGC Güvenliği).')" title="İlanı Bildir" class="px-2.5 py-1.5 bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-xl text-[10px]">
+                <i class="fa-solid fa-flag"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- İlan 2 -->
+          <div class="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
+            <div class="flex space-x-3">
+              <div class="w-16 h-16 rounded-xl bg-teal-100 flex items-center justify-center text-3xl flex-shrink-0">🐱</div>
+              <div class="flex-1">
+                <div class="flex justify-between items-start">
+                  <h4 class="font-black text-xs text-slate-900">Mırmır & Kardeşi (2 Aylık)</h4>
+                  <span class="text-[8.5px] font-bold text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded">AŞILI</span>
+                </div>
+                <p class="text-[9.5px] text-slate-500 mt-1">Yağmurda kurtarıldılar. Kuru mama yiyorlar, kum eğitimleri tam. Mümkünse birlikte veya ayrı yuva aranıyor.</p>
+                <span class="text-[8.5px] text-slate-400 mt-1 block">📍 Alsancak, İzmir • Dün</span>
+              </div>
+            </div>
+            <div class="flex space-x-1.5">
+              <button onclick="alert('Mırmır için ilan sahibiyle WhatsApp sohbeti başlatılıyor...')" class="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-[10px] flex items-center justify-center space-x-1">
+                <i class="fa-brands fa-whatsapp text-xs"></i>
+                <span>Sahiplenmek İstiyorum</span>
+              </button>
+              <button onclick="alert('🚩 İlan inceleme ekibine bildirildi (Google Play UGC Güvenliği).')" title="İlanı Bildir" class="px-2.5 py-1.5 bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-xl text-[10px]">
+                <i class="fa-solid fa-flag"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- İlan 3 -->
+          <div class="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
+            <div class="flex space-x-3">
+              <div class="w-16 h-16 rounded-xl bg-orange-100 flex items-center justify-center text-3xl flex-shrink-0">🐈</div>
+              <div class="flex-1">
+                <div class="flex justify-between items-start">
+                  <h4 class="font-black text-xs text-slate-900">Tarçın (1 Yaşında Sarman)</h4>
+                  <span class="text-[8.5px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">KISIRLAŞTIRILDI</span>
+                </div>
+                <p class="text-[9.5px] text-slate-500 mt-1">Çok uysal bir ev kedisi. Sahibi yurt dışına taşındığı için sokakta yapamaz. Sıcak ömürlük yuva bekliyor.</p>
+                <span class="text-[8.5px] text-slate-400 mt-1 block">📍 Bornova, İzmir • 3 gün önce</span>
+              </div>
+            </div>
+            <div class="flex space-x-1.5">
+              <button onclick="alert('Tarçın için ilan sahibiyle WhatsApp sohbeti başlatılıyor...')" class="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-[10px] flex items-center justify-center space-x-1">
+                <i class="fa-brands fa-whatsapp text-xs"></i>
+                <span>Sahiplenmek İstiyorum</span>
+              </button>
+              <button onclick="alert('🚩 İlan inceleme ekibine bildirildi (Google Play UGC Güvenliği).')" title="İlanı Bildir" class="px-2.5 py-1.5 bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-xl text-[10px]">
+                <i class="fa-solid fa-flag"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- 🌟 SAYFA 7: GENİŞLETİLMİŞ HAYVAN ANSİKLOPEDİSİ & BİLGİ REHBERİ (SEO UYUMLU) -->
+      <!-- ============================================== -->
+      <div id="pageBlog" class="p-3.5 space-y-3 text-xs hidden">
+        
+        <!-- Üst Başlık & Arama -->
+        <div class="flex items-center space-x-2 pb-1 border-b border-slate-200">
+          <button onclick="switchTab('home')" class="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-slate-700 hover:bg-slate-50">←</button>
+          <div>
+            <h2 class="font-black text-slate-900 text-xs">Arya Hayvan Ansiklopedisi</h2>
+            <p class="text-[9px] text-slate-500">Google SEO Uyumlu Kapsamlı Hayvan Bakım & Sağlık Kütüphanesi</p>
+          </div>
+        </div>
+
+        <!-- SEO Canlı Arama Kutusu -->
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+          <input type="text" id="blogSearchInput" onkeyup="searchBlogArticles(this.value)" placeholder="Aşı, pire/kene, tuvalet, sokak kedisi, tavşan ara..." class="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-xl text-xs bg-white font-medium focus:ring-1 focus:ring-slate-900 focus:outline-none shadow-xs">
+        </div>
+
+        <!-- KATEGORİ FİLTRE BUTONLARI -->
+        <div class="flex space-x-1.5 overflow-x-auto hide-scrollbar pb-1 text-[10px]">
+          <button onclick="filterBlogCategory('all', this)" class="px-3 py-1 bg-slate-900 text-white font-black rounded-lg whitespace-nowrap">Tümü (12)</button>
+          <button onclick="filterBlogCategory('acil', this)" class="px-3 py-1 bg-red-50 text-red-700 font-bold rounded-lg whitespace-nowrap border border-red-200">🚨 İlk Yardım</button>
+          <button onclick="filterBlogCategory('asi', this)" class="px-3 py-1 bg-emerald-50 text-emerald-800 font-bold rounded-lg whitespace-nowrap border border-emerald-200">💉 Aşı & Parazit</button>
+          <button onclick="filterBlogCategory('kopek', this)" class="px-3 py-1 bg-amber-50 text-amber-800 font-bold rounded-lg whitespace-nowrap border border-amber-200">🐶 Köpek</button>
+          <button onclick="filterBlogCategory('kedi', this)" class="px-3 py-1 bg-teal-50 text-teal-800 font-bold rounded-lg whitespace-nowrap border border-teal-200">🐱 Kedi Dünyası</button>
+          <button onclick="filterBlogCategory('sokak', this)" class="px-3 py-1 bg-orange-50 text-orange-800 font-bold rounded-lg whitespace-nowrap border border-orange-200">🐾 Sokak Hayvanları</button>
+          <button onclick="filterBlogCategory('egzotik', this)" class="px-3 py-1 bg-purple-50 text-purple-800 font-bold rounded-lg whitespace-nowrap border border-purple-200">🦜 Kuş & Kemirgen</button>
+          <button onclick="filterBlogCategory('akvaryum', this)" class="px-3 py-1 bg-cyan-50 text-cyan-800 font-bold rounded-lg whitespace-nowrap border border-cyan-200">🐠 Balık & Akvaryum</button>
+        </div>
+
+        <!-- ANSİKLOPEDİ MAKALELERİ LİSTESİ -->
+        <div id="blogArticlesList" class="space-y-2.5 pb-16">
+          
+          <!-- 1. ACİL DURUM (HAYATİ BİLGİ) -->
+          <article class="article-item acil p-3.5 bg-red-50/80 rounded-2xl border border-red-200 shadow-xs space-y-1.5" data-keywords="zehir çikolata üzüm soğan ilk yardım acil kusma tuzlu su köpek kedi">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-black text-red-700 uppercase tracking-wider bg-white px-2 py-0.5 rounded border border-red-300">
+                🚨 Hayati Acil Durum
+              </span>
+              <span class="text-[9px] text-red-600 font-bold"><i class="fa-regular fa-clock mr-1"></i>3 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-red-950">Evcil Hayvanlarda Ev İçi Zehirlenme Belirtileri ve İlk 5 Dakika Rehberi</h3>
+            <p class="text-[10px] text-red-900/80 leading-normal">
+              <strong>Zehirli Gıdalar:</strong> Çikolata (teobromin), soğan/sarımsak (alyum toksikasyonu), çiğ üzüm, ksilitollü sakızlar ve difenbahya gibi ev bitkileri. Aşırı salya ve titreme anında asla tuzlu su içirip kusturmayın; acil veteriner ve nakil desteği alın.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-red-800 font-medium">
+              <span class="bg-red-100/70 px-1.5 py-0.5 rounded">#kedi-zehirlenmesi</span>
+              <span class="bg-red-100/70 px-1.5 py-0.5 rounded">#köpek-ilk-yardım</span>
+              <span class="bg-red-100/70 px-1.5 py-0.5 rounded">#veteriner-acil</span>
+            </div>
+          </article>
+
+          <!-- 2. AŞI VE KORUYUCU SAĞLIK (SEO HIT) -->
+          <article class="article-item asi p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="kedi aşı takvimi köpek aşı takvimi karma kuduz lösemi iç dış parazit koruyucu veteriner">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                💉 Aşı Takvimi & Sağlık
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>5 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">2026 Yavru Kedi ve Köpek Aşı Takvimi: Hangi Aşı Ne Zaman Yapılır?</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Yavrularda anne sütü koruması bittiğinde 6-8. haftada İç-Dış Parazit ile başlanır. Ardından Karma 1-2, Lösemi (kedi), Kennel Cough (köpek) ve yasal zorunluluk olan Kuduz aşısı tamamlanır. Yıllık hatırlatma dozları yetişkinlikte aksatılmamalıdır.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kedi-aşı-takvimi</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#köpek-karma-aşı</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kuduz-aşısı</span>
+            </div>
+          </article>
+
+          <!-- 3. DIŞ PARAZİT & PİRE-KENE (MEVSİMSEL TREND) -->
+          <article class="article-item asi p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="pire kene iç parazit dış parazit damla ense damlası lyme kene temizliği">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                🛡️ Parazit Mücadelesi
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>4 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Pire ve Kene ile Mücadele: Ense Damlası Ne Sıklıkla Yapılmalı?</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Yaygın inanışın aksine parazitler kışın da kaloriferli evlerde yaşar. Dış parazit damlası 2 ayda bir, iç parazit ise zoonoz tenya riskini önlemek için 3 ayda bir tekrarlanmalıdır. Hayvanın üzerine yapışan kene kesinlikle elle ezilmemeli, cımbızla tabandan çekilmelidir.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#pire-damlası</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kene-temizleme</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#zoonoz-korunma</span>
+            </div>
+          </article>
+
+          <!-- 4. KEDİ KUM VE TUVALET EĞİTİMİ -->
+          <article class="article-item kedi p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="kedi kumu tuvalet eğitimi bentonit pelet dışarı yapma stres sistit idrar yolu kum kabı">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                🐱 Kedi Davranışı
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>4 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Kedilerde Kum Eğitimi ve Kumu Reddetme Nedenleri (1+1 Kuralı)</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Bir kedi aniden kum kabı dışına yapıyorsa ilk sebep idrar yolu enfeksiyonu (sistit) veya kum kabının mamasının yanında olmasıdır. Kural: Evdeki kedi sayısı + 1 adet kum kabı bulunmalı, koku yapmayan bentonit veya doğal çam peleti tercih edilmelidir.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kedi-kum-eğitimi</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kedi-sistit-belirtileri</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kedi-kumu-çeşitleri</span>
+            </div>
+          </article>
+
+          <!-- 5. KÖPEK EĞİTİMİ (POZİTİF PEKİŞTİRME) -->
+          <article class="article-item kopek p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="yavru köpek tuvalet eğitimi ödül maması pozitif pekiştirme ısırma kemirme havlama">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                🐶 Köpek Eğitimi
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>5 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Yavru Köpeklerde Hızlı Tuvalet Eğitimi: Adım Adım Pozitif Rehber</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Yavru köpekler uykudan hemen kalkınca ve mama yedikten 15-20 dk sonra mutlaka çişe çıkarılmalıdır. Yanlış yere yaptığında bağırmak yalnızca sizden gizli yapmasına yol açar. Doğru yere yaptığı milisaniyede "Aferin" diyerek ödül maması verilmelidir.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#yavru-köpek-tuvalet</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#köpek-eğitimi</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#pozitif-pekiştirme</span>
+            </div>
+          </article>
+
+          <!-- 6. SOĞUK HAVALARDA SOKAK HAYVANLARI (KIŞ REHBERİ) -->
+          <article class="article-item sokak p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="sokak kedisi kış bakımı soğuk kedi evi araba motoru kaputa vur su donması sokak hayvanları">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-orange-800 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                🐾 Sokak Canları & Kış
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>4 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Kışın Sokak Hayvanları İçin Ne Yapılabilir? Kedi Evi & Kaputa Vur Hayat Kurtar</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Bir kedi aç kalırsa 6 saatte, köpek ise 17 saatte hipotermiden donabilir. Koli ve straforla rüzgar almayan kedi evleri kurun, sularına bir damla zeytinyağı damlatarak donmayı geciktirin. Arabanızı çalıştırmadan önce motor kaputuna mutlaka 3 kez vurun!
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kaputa-vur</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#sokak-kedisi-kış</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kedi-evi-yapımı</span>
+            </div>
+          </article>
+
+          <!-- 7. SOKAK HAYVANI YAVRUSU BESLEME (ACİL BAKIM) -->
+          <article class="article-item sokak p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="öksüz yavru kedi anne sütü kedi süt tozu inek sütü ishali masaj çiş yaptırma sokak yavrusu">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-orange-800 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                🍼 Öksüz Yavru Bakımı
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>4 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Annesiz Sokak Yavrusu Bulduğunuzda Yapılacaklar: Asla İnek Sütü Vermeyin!</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Market inek sütündeki laktoz yeni doğmuş yavruları ölümcül ishale sürükler. Pet shop veya veterinerden alınan Kedi Süt Tozu (Kitten Milk Replacer) ılık suyla hazırlanmalıdır. Besleme sonrası nemli pamukla anüs bölgesine dairesel masaj yaparak çişi yaptırılmalıdır.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#yavru-kedi-besleme</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kedi-süt-tozu</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#öksüz-kedi-bakımı</span>
+            </div>
+          </article>
+
+          <!-- 8. TAVŞAN VE KEMİRGEN BAKIMI (SEO TREND) -->
+          <article class="article-item egzotik p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="evde tavşan bakımı tavşan beslenmesi kuru ot diş uzaması havuç efsanesi tavşan kafesi">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                🐰 Tavşan & Kemirgen
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>4 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Evde Tavşan Bakımı Rehberi: Havuç Efsanesi ve Kuru Yoncanın Önemi</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Çizgi filmlerin aksine tavşanların ana besini havuç değil (%80 oranında) kuru çayır otudur (Timothy/Yonca). Sürekli uzayan dişlerini sadece lifli kuru ot çiğneyerek törpülerler. Fazla havuç yüksek şekerden dolayı ölümcül gaz sancısına (GI Stasis) sebep olur.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#tavşan-bakımı</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#tavşan-beslenmesi</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kemirgen-sağlığı</span>
+            </div>
+          </article>
+
+          <!-- 9. HAMSTER BAKIMI -->
+          <article class="article-item egzotik p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="hamster bakımı talaş çark kafes temizliği gece hayvanı hamster besleme">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                🐹 Hamster Bakımı
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>3 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Hamster Beslerken Yapılan 5 Kritik Hata: Doğru Kafes & Çark Seçimi</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Hamsterlar gece aktif (noktürnal) canlılardır; gündüz zorla uyandırılmamalıdır. Çam veya sedir talaşı solunum yolu tahrişi yapar, tozsuz kağıt pelet kullanılmalıdır. Sırt omurgasının eğrilmemesi için tekerlek çapı en az 20 cm ve deliksiz olmalıdır.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#hamster-bakımı</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#hamster-kafesi</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kemirgen-çarkı</span>
+            </div>
+          </article>
+
+          <!-- 10. AKVARYUM VE BALIK BAKIMI (GENEL HAYVAN BİLGİSİ) -->
+          <article class="article-item akvaryum p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="evde akvaryum kurulumu balık bakımı beta balığı japon balığı su değişimi klor azot döngüsü">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-cyan-800 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">
+                🐠 Akvaryum Dünyası
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>4 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Evde Akvaryum Kurulumu: Azot Döngüsü ve Doğru Su Değişimi</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Akvaryum suyunun tamamını asla aynı anda değiştirmeyin! Bu faydalı bakteri florasını yok ederek balıkları amonyak zehirlenmesine sokar. Haftalık %20-25 oranında dinlenmiş (klorsuz) su değişimi yapılmalı, fanus yerine filtreli en az 30 litre tank tercih edilmelidir.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#akvaryum-kurulumu</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#japon-balığı-bakımı</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#azot-döngüsü</span>
+            </div>
+          </article>
+
+          <!-- 11. KUŞ VE PAPAĞANLARDA CEREYAN TEHLİKESİ -->
+          <article class="article-item egzotik p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="muhabbet kuşu papağan cereyan hava akımı kafes yeri tüylerini kabartma kuş sağlığı">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                🦜 Kuş Sağlığı
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>3 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Muhabbet Kuşları ve Papağanlarda Gizli Katil: Hava Akımı (Cereyan)</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Kuşların solunum sistemi hava keseleriyle inanılmaz derecede hassastır. Soğuktan ziyade karşılıklı açık iki pencere arasındaki hava akımı birkaç saatte akciğer enfeksiyonuna yol açar. Tüylerini kabartıp kafes tabanında uyuma acil kriz belirtisidir.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#muhabbet-kuşu-bakımı</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kuşlarda-cereyan</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#papağan-sağlığı</span>
+            </div>
+          </article>
+
+          <!-- 12. KISIRLAŞTIRILMIŞ HAYVANLARDA DİYET & METABOLİZMA -->
+          <article class="article-item kedi kopek p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5" data-keywords="kısırlaştırma sonrası beslenme sterilised mama kilo kontrolü struvit taşı idrar yolu kedi köpek">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                🥗 Diyet & Beslenme
+              </span>
+              <span class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>4 dk</span>
+            </div>
+            <h3 class="font-black text-xs text-slate-900">Kısırlaştırma Sonrası Beslenme: Kilo Artışı ve İdrar Yolu Taşları Nasıl Önlenir?</h3>
+            <p class="text-[10px] text-slate-600 leading-normal">
+              Operasyon sonrası hormonal değişimle metabolizma hızı %20 düşerken iştah artar. Normal mamaya devam edilirse obezite ve özellikle erkek kedilerde ölümcül idrar yolu tıkanması (FLUTD/Struvit) gelişebilir. Düşük magnezyum-fosforlu sterilised mamalar ve bol su pınarı şarttır.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-1 text-[8.5px] text-slate-500 font-medium">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#kısırlaştırılmış-kedi-maması</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#obezite-önleme</span>
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded">#flutd-korunma</span>
+            </div>
+          </article>
+
+        </div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- 🪪 SAYFA 8: DİJİTAL AŞI KARNESİ, MAMA HESAPLAYICI & KAYIP SOS -->
+      <!-- ============================================== -->
+      <div id="pageKarne" class="p-3.5 space-y-3 text-xs hidden">
+        
+        <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+          <div class="flex items-center space-x-2">
+            <button onclick="switchTab('home')" class="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-slate-700">←</button>
+            <div>
+              <h2 class="font-black text-slate-900 text-xs">Dijital Pet Karnem & Akıllı Araçlar</h2>
+              <p class="text-[9px] text-slate-500">Aşı takvimi, QR künye, mama gramajı & kayıp SOS</p>
+            </div>
+          </div>
+          <button onclick="alert('📲 QR Künye ve PDF Aşı Karnesi oluşturuldu! Veterinerinizle paylaşabilirsiniz.')" class="px-2.5 py-1 bg-indigo-600 text-white font-black rounded-xl text-[9.5px] shadow-xs">
+            <i class="fa-solid fa-qrcode mr-1"></i>QR Künye
+          </button>
+        </div>
+
+        <!-- 1. DİJİTAL PET PASAPORTU KARTI -->
+        <div class="p-3.5 rounded-3xl bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white shadow-md space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl">
+                🐕
+              </div>
+              <div>
+                <div class="flex items-center space-x-1.5">
+                  <h3 class="font-black text-sm">Luna (Golden Retriever)</h3>
+                  <span class="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded text-[8px] font-bold">ÇİPLİ</span>
+                </div>
+                <p class="text-[9.5px] text-slate-300">2 Yaş • 24.5 kg • Kısırlaştırılmış • Çip: #TR-9001824</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aşı Hatırlatıcı Durumları -->
+          <div class="grid grid-cols-3 gap-1.5 pt-1 text-center">
+            <div class="p-2 rounded-xl bg-white/10 border border-white/10">
+              <span class="text-[8.5px] text-slate-300 block">İç/Dış Parazit</span>
+              <span class="font-black text-amber-300 text-[10px] block mt-0.5">⏳ 4 Gün Kaldı</span>
+            </div>
+            <div class="p-2 rounded-xl bg-white/10 border border-white/10">
+              <span class="text-[8.5px] text-slate-300 block">Karma Aşı</span>
+              <span class="font-black text-emerald-300 text-[10px] block mt-0.5">✓ Tamamlandı</span>
+            </div>
+            <div class="p-2 rounded-xl bg-white/10 border border-white/10">
+              <span class="text-[8.5px] text-slate-300 block">Kuduz Aşısı</span>
+              <span class="font-black text-emerald-300 text-[10px] block mt-0.5">✓ Tamamlandı</span>
+            </div>
+          </div>
+
+          <button onclick="selectVetForTransfer('Arya Karşıyaka Acil Hayvan Hastanesi')" class="w-full py-2 bg-indigo-500 hover:bg-indigo-400 text-white font-black rounded-xl text-[10px] shadow-xs active:scale-95 transition-transform">
+            💉 Yaklaşan Parazit Aşısı İçin Veteriner Nakli Planla
+          </button>
+        </div>
+
+        <!-- 2. AKILLI GÜNLÜK MAMA & SU HESAPLAYICI -->
+        <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-200/90 shadow-xs space-y-2.5">
+          <div class="flex justify-between items-center">
+            <div>
+              <h4 class="font-black text-slate-900 text-xs">🥣 Akıllı Mama & Su Ölçer</h4>
+              <p class="text-[9px] text-slate-500">Kilosuna ve kısırlaştırma durumuna göre günlük ideal porsiyon</p>
+            </div>
+            <span class="px-2 py-0.5 bg-blue-50 text-blue-800 font-bold rounded text-[8.5px]">Vet Formülü</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-[9px] font-bold text-slate-600 block mb-1">Tür</label>
+              <select id="calcPetType" onchange="calculateDailyPortion()" class="w-full p-1.5 border border-slate-200 rounded-xl text-[10px] font-bold bg-slate-50">
+                <option value="cat">🐱 Kedi</option>
+                <option value="dog" selected>🐶 Köpek</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-600 block mb-1">Kilo (kg)</label>
+              <input type="number" id="calcPetWeight" value="12" min="1" max="80" oninput="calculateDailyPortion()" class="w-full p-1.5 border border-slate-200 rounded-xl text-[10px] font-bold bg-slate-50">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-600 block mb-1">Durum</label>
+              <select id="calcNeutered" onchange="calculateDailyPortion()" class="w-full p-1.5 border border-slate-200 rounded-xl text-[10px] font-bold bg-slate-50">
+                <option value="yes">Kısır</option>
+                <option value="no">Kısır Değil</option>
+                <option value="puppy">Yavru</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-900 text-white flex justify-around items-center text-center">
+            <div>
+              <span class="text-[8.5px] text-slate-400 block">Günlük Kuru Mama</span>
+              <span class="font-black text-sm text-amber-400" id="resDryFood">185 gr / gün</span>
+            </div>
+            <div class="h-6 w-px bg-slate-700"></div>
+            <div>
+              <span class="text-[8.5px] text-slate-400 block">Günlük Taze Su</span>
+              <span class="font-black text-sm text-cyan-300" id="resWater">720 ml / gün</span>
+            </div>
+            <div class="h-6 w-px bg-slate-700"></div>
+            <div>
+              <span class="text-[8.5px] text-slate-400 block">Günlük Kalori</span>
+              <span class="font-black text-sm text-emerald-300" id="resCalories">640 kcal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. KAYIP HAYVAN ACİL SOS RADARI (MAHALLE ALARMI) -->
+        <div class="p-3.5 rounded-2xl bg-red-50 border-2 border-red-200 shadow-xs space-y-2 pb-4 mb-12">
+          <div class="flex justify-between items-center">
+            <span class="text-[9px] font-black text-white bg-red-600 px-2 py-0.5 rounded-full animate-pulse">📡 KAYIP SOS RADARI (AKTİF)</span>
+            <span class="text-[9px] font-bold text-red-700">5 km Çevredeki Kullanıcılar</span>
+          </div>
+          <p class="text-[9.5px] text-red-900/80">
+            Can dostunuz kaybolduğunda veya sokakta tasmalı kayıp bir hayvan gördüğünüzde tek tuşla bölgedeki tüm Arya kullanıcılarına fotoğraflı bildirim gönderin.
+          </p>
+          <div class="p-2.5 bg-white rounded-xl border border-red-200 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">🐈</span>
+              <div>
+                <span class="font-black text-slate-900 text-[10px] block">Kayıp: Limon (Sarı Tekir - Mavi Tasmalı)</span>
+                <span class="text-[8.5px] text-slate-500">📍 Bostanlı Cami Sokağı • 2 saat önce görüldü</span>
+              </div>
+            </div>
+            <button onclick="alert('📞 Limon\'un sahibine konum bilginiz ve telefonunuz iletiliyor...')" class="px-2.5 py-1 bg-emerald-600 text-white font-black rounded-lg text-[9px]">Gördüm!</button>
+          </div>
+          <button onclick="triggerLostPetSOS()" class="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl text-[10px] shadow-sm active:scale-95 transition-transform">
+            🚨 Kayıp Hayvan SOS Alarmı Yayınla (Ücretsiz)
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Alt Sekmeler (6 Hızlı Sekme) -->
+    <div class="absolute bottom-0 inset-x-0 bg-white border-t border-slate-200 px-3 py-2 flex justify-between items-center text-xs z-30">
+      <button onclick="switchTab('home')" id="navHome" class="flex flex-col items-center text-slate-900 font-bold">
+        <i class="fa-solid fa-house text-sm"></i>
+        <span class="text-[8px] mt-0.5">Ana Sayfa</span>
+      </button>
+      <button onclick="switchTab('nakil')" id="navNakil" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
+        <i class="fa-solid fa-truck-fast text-sm"></i>
+        <span class="text-[8px] mt-0.5">Pet Nakil</span>
+      </button>
+      <button onclick="switchTab('karne')" id="navKarne" class="flex flex-col items-center text-indigo-600 hover:text-indigo-700 font-bold">
+        <i class="fa-solid fa-id-card text-sm"></i>
+        <span class="text-[8px] mt-0.5">Karnem</span>
+      </button>
+      <button onclick="switchTab('care')" id="navCare" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
+        <i class="fa-solid fa-basket-shopping text-sm"></i>
+        <span class="text-[8px] mt-0.5">Pet+Care</span>
+      </button>
+      <button onclick="switchTab('sah')" id="navSah" class="flex flex-col items-center text-rose-500 hover:text-rose-600 font-bold">
+        <i class="fa-solid fa-paw text-sm"></i>
+        <span class="text-[8px] mt-0.5">S.A.H</span>
+      </button>
+      <button onclick="switchTab('blog')" id="navBlog" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
+        <i class="fa-solid fa-book-open text-sm"></i>
+        <span class="text-[8px] mt-0.5">Rehber</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    const pages = ['home', 'nakil', 'kuafor', 'veteriner', 'care', 'sah', 'blog', 'karne'];
+
+    function switchTab(tabName) {
+      pages.forEach(p => {
+        const el = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
+        if (el) el.classList.add('hidden');
+      });
+
+      const target = document.getElementById('page' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+      if (target) target.classList.remove('hidden');
+
+      ['home', 'nakil', 'karne', 'care', 'sah', 'blog'].forEach(nav => {
+        const btn = document.getElementById('nav' + nav.charAt(0).toUpperCase() + nav.slice(1));
+        if (btn) {
+          if (nav === tabName) btn.className = 'flex flex-col items-center text-slate-900 font-black';
+          else btn.className = 'flex flex-col items-center text-slate-400 hover:text-slate-700';
+        }
+      });
+
+      if (tabName === 'nakil') {
+        setTimeout(() => {
+          if (!map) initMap();
+          else {
+            map.invalidateSize();
+            renderAccurateRoute();
+          }
+        }, 80);
+      }
+    }
+
+    // --- ANSİKLOPEDİ KATEGORİ VE SEO ARAMA ---
+    function filterBlogCategory(cat, btn) {
+      document.querySelectorAll('#pageBlog .overflow-x-auto button').forEach(b => {
+        b.className = 'px-3 py-1 bg-slate-100 text-slate-700 font-bold rounded-lg whitespace-nowrap border border-slate-200';
+      });
+      btn.className = 'px-3 py-1 bg-slate-900 text-white font-black rounded-lg whitespace-nowrap';
+
+      const query = (document.getElementById('blogSearchInput')?.value || '').toLowerCase().trim();
+      const items = document.querySelectorAll('.article-item');
+      items.forEach(item => {
+        const matchesCategory = (cat === 'all' || item.classList.contains(cat));
+        const itemKeywords = (item.getAttribute('data-keywords') || '') + ' ' + item.innerText.toLowerCase();
+        const matchesSearch = !query || itemKeywords.includes(query);
+
+        if (matchesCategory && matchesSearch) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    }
+
+    function searchBlogArticles(query) {
+      const q = (query || '').toLowerCase().trim();
+      const items = document.querySelectorAll('.article-item');
+      items.forEach(item => {
+        const itemKeywords = (item.getAttribute('data-keywords') || '') + ' ' + item.innerText.toLowerCase();
+        if (!q || itemKeywords.includes(q)) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    }
+
+    // Nakil Harita Değişkenleri
+    let serviceType = 'CITY_IN';
+    let currentDistance = 14.8;
+    let stops = [];
+    let selectedDay = 7;
+    let map = null;
+    let routeLayer = null;
+    let markersLayer = null;
+
+    const BASE_FARE_CITY_IN = 1000;
+    const INCLUDED_KM = 10;
+    const EXTRA_PER_KM_RATE = 50;
+    const PER_KM_CITY_OUT = 35;
+
+    const REAL_IZMIR_ROAD = [
+      [38.4552, 27.1125], [38.4562, 27.1195], [38.4578, 27.1285], [38.4595, 27.1365],
+      [38.4622, 27.1455], [38.4638, 27.1545], [38.4612, 27.1622], [38.4565, 27.1678],
+      [38.4510, 27.1715], [38.4455, 27.1712], [38.4415, 27.1682], [38.4392, 27.1620],
+      [38.4375, 27.1552], [38.4368, 27.1485], [38.4355, 27.1425]
+    ];
+
+    const REAL_HIGHWAY_ROAD = [
+      [38.4615, 27.2165], [38.5250, 27.3200], [38.6220, 27.4280], [38.7850, 27.6120],
+      [38.9180, 27.8320], [39.1950, 27.8900], [39.6480, 27.8820], [39.8850, 28.1550],
+      [40.0820, 28.3650], [40.2150, 28.8200], [40.2580, 29.0620], [40.4350, 29.2550],
+      [40.6650, 29.4850], [40.7575, 29.5165], [40.7980, 29.4820], [40.8850, 29.2650],
+      [40.9620, 29.0950], [40.9905, 29.0290]
+    ];
+
+    function parseLatLon(val) {
+      if (!val) return [38.4552, 27.1125];
+      const parts = val.split(',').map(Number);
+      return parts.length === 2 && !isNaN(parts[0]) ? parts : [38.4552, 27.1125];
+    }
+
+    function initMap() {
+      map = L.map('liveRouteMap', { zoomControl: false, attributionControl: false }).setView([38.4480, 27.1350], 12);
+      // %100 Ücretsiz, API Key İstemeyen Resmi OpenStreetMap Katmanı + CARTO Yedeklemesi
+      const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      });
+      osmLayer.on('tileerror', function() {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
+          subdomains: 'abcd'
+        }).addTo(map);
+      });
+      osmLayer.addTo(map);
+
+      routeLayer = L.layerGroup().addTo(map);
+      markersLayer = L.layerGroup().addTo(map);
+      renderAccurateRoute();
+    }
+
+    async function renderAccurateRoute() {
+      if (!map) return;
+      routeLayer.clearLayers();
+      markersLayer.clearLayers();
+
+      const oVal = document.getElementById('routeOrigin')?.value || '38.4552,27.1125';
+      const dVal = document.getElementById('routeDest')?.value || '38.4355,27.1425';
+      const originPt = parseLatLon(oVal);
+      const destPt = parseLatLon(dVal);
+
+      // Eğer İstanbul (lat > 40) veya şehir dışına gidiliyorsa otomatik Şehirlerarası moda geçir
+      const isIntercity = Math.abs(originPt[0] - destPt[0]) > 0.6 || Math.abs(originPt[1] - destPt[1]) > 0.9;
+      serviceType = isIntercity ? 'CITY_OUT' : 'CITY_IN';
+      updateServiceButtonsUI();
+
+      // Pinleri koy
+      const iconA = L.divIcon({ className: 'custom-map-pin pin-a', html: 'A', iconSize: [24, 24], iconAnchor: [12, 12] });
+      L.marker(originPt, { icon: iconA }).addTo(markersLayer);
+
+      const waypoints = [originPt];
+      stops.forEach((s, i) => {
+        const stopPt = parseLatLon(s.coord);
+        waypoints.push(stopPt);
+        const iconStop = L.divIcon({ className: 'custom-map-pin pin-stop', html: 'D' + (i + 1), iconSize: [22, 22], iconAnchor: [11, 11] });
+        L.marker(stopPt, { icon: iconStop }).addTo(markersLayer);
+      });
+
+      // İzmir Körfezi veya Marmara Denizi'nde OSRM'in arabalı vapur/feribot seçmesini %100 engellemek için karayolu kilit noktaları:
+      // 1) Karşıyaka/Bostanlı (kuzey) <-> Alsancak/Balçova (güney) arasında Altınyol-Turan-Halkapınar kara kavşağı: [38.4438, 27.1695]
+      if (!isIntercity && ((originPt[0] > 38.450 && destPt[0] < 38.445) || (originPt[0] < 38.445 && destPt[0] > 38.450))) {
+        waypoints.push([38.4438, 27.1695]); // Halkapınar kara kavşağı (vapur kesinlikle hariç)
+      }
+      // 2) İzmir <-> İstanbul arasında Osmangazi Köprüsü kara geçişi: [40.7575, 29.5165]
+      if (isIntercity && (destPt[0] > 40.5 || originPt[0] > 40.5)) {
+        waypoints.push([40.2450, 29.0600]); // Bursa O-5
+        waypoints.push([40.7575, 29.5165]); // Osmangazi Köprüsü
+      }
+
+      waypoints.push(destPt);
+
+      const iconB = L.divIcon({ className: 'custom-map-pin pin-b', html: 'B', iconSize: [24, 24], iconAnchor: [12, 12] });
+      L.marker(destPt, { icon: iconB }).addTo(markersLayer);
+
+      // OSRM API için lon,lat dizisi oluştur
+      const coordString = waypoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
+
+      try {
+        const res = await fetch(osrmUrl);
+        const data = await res.json();
+        if (data && data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+          const latLngs = route.geometry.coordinates.map(c => [c[1], c[0]]);
+          currentDistance = +(route.distance / 1000).toFixed(1);
+          const durationMin = Math.max(5, Math.round(route.duration / 60));
+
+          const statsEl = document.getElementById('liveMapStats');
+          if (statsEl) statsEl.innerText = `${currentDistance} km • ~${durationMin} dk`;
+
+          const poly = L.polyline(latLngs, {
+            color: isIntercity ? '#D97706' : '#0F172A',
+            weight: 5,
+            opacity: 0.92
+          }).addTo(routeLayer);
+
+          map.invalidateSize();
+          map.fitBounds(poly.getBounds(), { padding: [22, 22] });
+          recalculateLivePrice(durationMin);
+          return;
+        }
+      } catch (e) {
+        console.warn('OSRM fallback:', e);
+      }
+
+      // Yedek (Offline) gerçek kıvrımlı karayolu çizimi
+      const fallbackCoords = isIntercity ? [...REAL_HIGHWAY_ROAD] : [...REAL_IZMIR_ROAD];
+      const poly = L.polyline(fallbackCoords, { color: isIntercity ? '#D97706' : '#0F172A', weight: 5 }).addTo(routeLayer);
+      map.invalidateSize();
+      map.fitBounds(poly.getBounds(), { padding: [22, 22] });
+      recalculateLivePrice();
+    }
+
+    function onLocationChange() {
+      renderAccurateRoute();
+    }
+
+    function updateServiceButtonsUI() {
+      const bIn = document.getElementById('btnCityIn');
+      const bOut = document.getElementById('btnCityOut');
+      if (!bIn || !bOut) return;
+      if (serviceType === 'CITY_IN') {
+        bIn.className = 'p-2 rounded-2xl border-2 border-slate-900 bg-white text-left shadow-xs';
+        bOut.className = 'p-2 rounded-2xl border border-slate-200 bg-white/70 text-left';
+      } else {
+        bOut.className = 'p-2 rounded-2xl border-2 border-slate-900 bg-white text-left shadow-xs';
+        bIn.className = 'p-2 rounded-2xl border border-slate-200 bg-white/70 text-left';
+      }
+    }
+
+    function recalculateLivePrice(overrideMinutes) {
+      const isIntercity = serviceType === 'CITY_OUT';
+      const estMinutes = overrideMinutes || (isIntercity ? Math.round(currentDistance * 0.65) : Math.round(currentDistance * 1.4));
+      const statsEl = document.getElementById('liveMapStats');
+      if (statsEl) statsEl.innerText = `${currentDistance} km • ~${estMinutes} dk`;
+
+      const priceEl = document.getElementById('totalPriceDisplay');
+      const tagEl = document.getElementById('priceRuleTag');
+      const subEl = document.getElementById('priceDetailSubtext');
+
+      if (!isIntercity) {
+        const extraKm = Math.max(0, +(currentDistance - INCLUDED_KM).toFixed(1));
+        const total = Math.round(BASE_FARE_CITY_IN + extraKm * EXTRA_PER_KM_RATE);
+        if (priceEl) priceEl.innerText = total.toLocaleString('tr-TR') + ' TL';
+        if (tagEl) tagEl.innerText = extraKm > 0 ? `+${extraKm} KM Aşım` : '10 KM Sabit Taban';
+        if (subEl) subEl.innerText = `İlk 10 km sabit 1.000 TL + aşan ${extraKm} km × 50 TL (Refakatçi Ücretsiz)`;
+      } else {
+        const sizeMultiplier = parseFloat(document.getElementById('petSizeSelect')?.value || '1.0');
+        const hasCompanion = document.getElementById('companionCheck')?.checked || false;
+        const baseCost = currentDistance * PER_KM_CITY_OUT * sizeMultiplier;
+        const companionCost = hasCompanion ? currentDistance * 3 : 0;
+        const total = Math.round(baseCost + companionCost);
+        if (priceEl) priceEl.innerText = total.toLocaleString('tr-TR') + ' TL';
+        if (tagEl) tagEl.innerText = `O-5 Otoyolu (${sizeMultiplier}x)`;
+        if (subEl) subEl.innerText = `${currentDistance} km × 35 TL × ${sizeMultiplier} boyut çarpanı` + (hasCompanion ? ' + Refakatçi (3 TL/km)' : '');
+      }
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calendarDaysGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const bookedDays = [5, 8, 12, 15, 19];
+      for (let d = 4; d <= 17; d++) {
+        const isBooked = bookedDays.includes(d);
+        const isSelected = d === selectedDay;
+        const btn = document.createElement('button');
+        if (isBooked) {
+          btn.className = 'py-1 rounded-lg bg-red-50 text-red-400 line-through cursor-not-allowed font-medium';
+          btn.innerText = d;
+          btn.disabled = true;
+        } else if (isSelected) {
+          btn.className = 'py-1 rounded-lg bg-slate-900 text-white font-black shadow-xs';
+          btn.innerText = d;
+        } else {
+          btn.className = 'py-1 rounded-lg bg-slate-50 hover:bg-slate-200 text-slate-700 font-bold';
+          btn.innerText = d;
+          btn.onclick = () => { selectedDay = d; renderCalendar(); };
+        }
+        grid.appendChild(btn);
+      }
+    }
+
+    function completeBooking() {
+      const priceText = document.getElementById('totalPriceDisplay')?.innerText || '';
+      alert(`🐾 Rezervasyonunuz Onaya Gönderildi!\n\nTarih: ${selectedDay} Kasım 2026\nMesafe: ${currentDistance} km (Feribot Hariç)\nToplam Tutar: ${priceText}\nAraç: 35 ARY 01\n\nSürücümüz yola çıktığında WhatsApp Canlı Konum linkiniz SMS ile iletilecektir.`);
+    }
+
+    function addStop() {
+      if (stops.length >= 2) return;
+      const sampleStops = [
+        { name: 'Bostanlı Veteriner Kliniği', coord: '38.4585,27.0985' },
+        { name: 'Bornova Pet Kuaför', coord: '38.4615,27.2165' }
+      ];
+      const pick = sampleStops[stops.length];
+      stops.push({ id: Date.now(), name: pick.name, coord: pick.coord });
+      renderStops();
+      renderAccurateRoute();
+    }
+
+    function removeStop(id) {
+      stops = stops.filter(s => s.id !== id);
+      renderStops();
+      renderAccurateRoute();
+    }
+
+    function renderStops() {
+      const c = document.getElementById('stopsContainer');
+      c.innerHTML = '';
+      stops.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center space-x-2';
+        div.innerHTML = `<div class="custom-map-pin pin-stop text-[10px]">D${i+1}</div><input type="text" value="${s.name}" readonly class="flex-1 p-1.5 border border-amber-200 rounded-xl text-xs bg-amber-50/40 font-semibold text-slate-800"><button onclick="removeStop(${s.id})" class="text-red-500 font-bold px-1.5 py-0.5 hover:bg-red-50 rounded">✕</button>`;
+        c.appendChild(div);
+      });
+    }
+
+    function setServiceType(t) {
+      serviceType = t;
+      const oInput = document.getElementById('routeOrigin');
+      const dInput = document.getElementById('routeDest');
+      if (t === 'CITY_IN') {
+        if (oInput) oInput.value = '38.4552,27.1125';
+        if (dInput) dInput.value = '38.4355,27.1425';
+      } else {
+        if (oInput) oInput.value = '38.4615,27.2165';
+        if (dInput) dInput.value = '40.9905,29.0290';
+      }
+      updateServiceButtonsUI();
+      renderAccurateRoute();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCalendar();
+      recalculateLivePrice();
+    });
+    let cart = [];
+
+    function addToCart(name, price) {
+      cart.push({ name, price });
+      updateCartUI();
+      alert(`🛒 "${name}" (${price} TL) sepetinize eklendi!`);
+    }
+
+    function updateCartUI() {
+      const hCount = document.getElementById('headerCartCount');
+      const cText = document.getElementById('careCartBtnText');
+      if (hCount) hCount.innerText = cart.length;
+      if (cText) cText.innerText = `Sepet (${cart.length})`;
+    }
+
+    function openCartDrawer() {
+      if (cart.length === 0) {
+        alert("🛒 Sepetiniz şu an boş. Pet + Care mağazasından veteriner onaylı ürünleri ekleyebilirsiniz.");
+        switchTab('care');
+        return;
+      }
+      const total = cart.reduce((acc, item) => acc + item.price, 0);
+      const listStr = cart.map((item, idx) => `${idx + 1}. ${item.name} - ${item.price} TL`).join('\n');
+      const confirmOrder = confirm(`🛍️ Sepet Özeti:\n\n${listStr}\n\nToplam: ${total} TL\n\nSiparişinizi onaylayıp VIP kurye / nakil aracı ile kapınıza teslim edilsin mi?`);
+      if (confirmOrder) {
+        cart = [];
+        updateCartUI();
+        alert("✅ Siparişiniz başarıyla oluşturuldu! 35 ARY 01 ekibimiz tarafından hazırlanıp adresinize teslim edilecektir.");
+      }
+    }
+
+    function bookGrooming(pkgName, price) {
+      const wantTransfer = confirm(`✂️ "${pkgName}" (${price} TL) seçildi.\n\nEvcil dostunuzun evden alınıp kuaför sonrası tekrar eve bırakılması için VIP Nakil eklensin mi?`);
+      if (wantTransfer) {
+        alert(`✅ Randevunuz + VIP Nakil talebiniz kaydedildi!\nPaket: ${pkgName}\nDurum: Kuaför + 35 ARY 01 Transferi`);
+      } else {
+        alert(`✅ Salon kuaför randevunuz başarıyla oluşturuldu!\nPaket: ${pkgName} (${price} TL)`);
+      }
+    }
+
+    function selectVetForTransfer(vetName) {
+      const destInput = document.getElementById('routeDest');
+      if (destInput) {
+        if (vetName.includes('Karşıyaka')) destInput.value = '38.4552,27.1125';
+        else if (vetName.includes('Alsancak')) destInput.value = '38.4355,27.1425';
+        else if (vetName.includes('Bornova')) destInput.value = '38.4615,27.2165';
+      }
+      switchTab('nakil');
+      renderAccurateRoute();
+    }
+
+    function calculateDailyPortion() {
+      const pType = document.getElementById('calcPetType')?.value || 'dog';
+      const weight = Math.max(0.5, parseFloat(document.getElementById('calcPetWeight')?.value || '10'));
+      const status = document.getElementById('calcNeutered')?.value || 'yes';
+
+      // Veteriner RER (Resting Energy Requirement) = 70 * (weight ^ 0.75)
+      const rer = 70 * Math.pow(weight, 0.75);
+      let factor = 1.4;
+      if (status === 'yes') factor = pType === 'cat' ? 1.2 : 1.4;
+      else if (status === 'no') factor = pType === 'cat' ? 1.4 : 1.6;
+      else if (status === 'puppy') factor = 2.2;
+
+      const kcal = Math.round(rer * factor);
+      const grams = Math.round(kcal / 3.6); // Ortalama kuru mama 3600 kcal/kg
+      const waterMl = Math.round(weight * 60); // 60 ml / kg su ihtiyacı
+
+      const elFood = document.getElementById('resDryFood');
+      const elWater = document.getElementById('resWater');
+      const elCal = document.getElementById('resCalories');
+      if (elFood) elFood.innerText = `${grams} gr / gün`;
+      if (elWater) elWater.innerText = `${waterMl} ml / gün`;
+      if (elCal) elCal.innerText = `${kcal} kcal`;
+    }
+
+    function triggerLostPetSOS() {
+      const petInfo = prompt("🚨 Kayıp Canlının Adı, Türü ve Tasma Rengi (Örn: Tarçın - Golden - Kırmızı Tasma):");
+      if (!petInfo) return;
+      const lastLoc = prompt("📍 En Son Görüldüğü Sokak / Semt:");
+      if (!lastLoc) return;
+      alert(`📡 ACİL SOS ALARMI YAYINLANDI!\n\n"${petInfo}" (${lastLoc}) bilgisi 5 km yarıçaptaki tüm Arya Pet Hizmetleri kullanıcılarına ve nöbetçi kliniklere anlık bildirim olarak gönderildi.`);
+    }
+
+    function openSahFormModal() {
+      const petName = prompt("Sahiplendirilecek canlının adı veya türü (Örn: Pamuk - 3 Aylık Tekir):");
+      if (!petName) return;
+      const desc = prompt("Kısa durum açıklaması ve konum (Örn: Karşıyaka'da sokakta bulundu, aşıları yapıldı):");
+      if (!desc) return;
+      alert("✅ İlanınız başarıyla incelemeye gönderildi! Editör onayından sonra S.A.H platformunda ücretsiz yayınlanacaktır.");
+    }
+  </script>
+</body>
+</html>
